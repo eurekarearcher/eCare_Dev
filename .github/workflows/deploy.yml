@@ -9,7 +9,6 @@ jobs:
   deploy:
     runs-on: self-hosted
 
-    # I-bypass ang Node.js Windows OS version check para sa lumang Windows OS
     env:
       NODE_SKIP_PLATFORM_CHECK: '1'
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
@@ -18,19 +17,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy Files using Rsync
+      - name: Deploy Files using SCP
         shell: bash
         run: |
           SSH_HOST="10.0.4.10"
           SSH_USER="archer.cabahug"
           TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
-          KEY_PATH="/c/Users/mathew/.ssh/id_rsa"
 
           # 1. Siguraduhing gawa ang directory sa remote server
-          ssh -i "$KEY_PATH" -o StrictHostKeyChecking=no -o ConnectTimeout=10 "$SSH_USER@$SSH_HOST" "mkdir -p \"$TARGET_DIR\""
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 "$SSH_USER@$SSH_HOST" "mkdir -p \"$TARGET_DIR\""
 
-          # 2. I-sync ang files gamit ang rsync
-          rsync -av -e "ssh -i $KEY_PATH -o StrictHostKeyChecking=no" \
-            --exclude='.git' \
-            --exclude='.github' \
-            ./ "$SSH_USER@$SSH_HOST:\"$TARGET_DIR/\""
+          # 2. I-copy ang lahat ng files gamit ang SCP (rekursibo) sa halip na rsync
+          scp -r -o StrictHostKeyChecking=no ./ $SSH_USER@$SSH_HOST:"$TARGET_DIR"
