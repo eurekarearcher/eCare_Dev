@@ -18,7 +18,7 @@ jobs:
         run: |
           SSH_HOST="10.0.4.10"
           SSH_USER="archer.cabahug"
-          TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/eCare System Frontend Code/eCare 3.5.9"
+          TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
 
           # Absolute path sa SSH Key ng Windows user account
           SSH_KEY_PATH="C:/Users/mathew/.ssh/id_rsa"
