@@ -1,0 +1,30 @@
+name: Deploy via SSH (Key Authentication)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Deploy Files using Rsync
+        shell: bash
+        run: |
+          SSH_HOST="10.0.4.10"
+          SSH_USER="archer.cabahug"
+          TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
+
+          # 1. Siguraduhing gawa ang directory sa remote server
+          ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "mkdir -p \"$TARGET_DIR\""
+
+          # 2. I-sync ang files gamit ang rsync over SSH Key
+          rsync -av -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude='.git' \
+            --exclude='.github' \
+            . "$SSH_USER@$SSH_HOST:\"$TARGET_DIR\""
