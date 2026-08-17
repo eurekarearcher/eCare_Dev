@@ -1,0 +1,55 @@
+{
+  "transaction_number": "",
+  "provider_code": "EK0E3F6A892AEE2398",
+  "icd_cpt_data": [
+    {
+      "icd_code": "Z00.0",
+      "icd_description": "GENERAL MEDICAL EXAMINATION",
+      "category_description_id": "",
+      "ph_category": null,
+      "hmo_icd_limit_bal": 0,
+      "hmo_icd_status": null,
+      "phic_icd_status": null,
+      "lgu_icd_status": null,
+      "icd_type": "PRIMARY",
+      "procedure_list": [
+        {
+          "cpt_code": "82947",
+          "cpt_description": "GLUC QUAN BLD (FASTING BLOOD SUGAR, FBS)",
+          "cpt_amount": 0,
+          "cpt_mod_code": "",
+          "hmo_cpt_approved_amount": 0,
+          "phic_cpt_status": null,
+          "lgu_cpt_status": null,
+          "hmo_cpt_status": null,
+          "hmo_loa_amount": 0,
+          "for_hmo_approval": 0,
+          "diag_exam_status": "N",
+          "physician_recommendation": "Y",
+          "patient_remarks": "XX"
+        }
+      ]
+    }
+  ],
+  "patient_medicine": [],
+  "date_admitted": "2025-12-23",
+  "date_discharged": "2025-12-23",
+  "transaction_type": "CONSULTATION",
+  "transaction_status": "ISSUED",
+  "treatment_recommendation": "OUTPATIENT",
+  "notes_management": {
+    "management": [
+      {
+        "lib_id": "0",
+        "management_description": "NOT APPLICABLE"
+      }
+    ],
+    "doctor_notes": "TEST DOCTOR operator_notes"
+  },
+  "admitting_diagnosis": "TEST ASSESSMENT",
+  "current_history_illness": "TEST CURRENT HISTORY ILLNESS",
+  "chief_complaint": "TEST CHIEF COMPLAINT",
+  "process_by": "test-mila",
+  "is_off_transaction": true,
+  "ekonsulta_eligible": true
+}

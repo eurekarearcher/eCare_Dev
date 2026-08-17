@@ -1,0 +1,1665 @@
+UPDATE DEV: 09-15-2025
+eCare: v4.13.1
+
+Natality.vue
+- Set all the input fields & selection to upper case
+- Remove the line this.method_of_delivery = ''; from the selectAttendByMethod() method.
+- Set a maximum character limit of 20 characters for the "Attended By - Others" dialog
+  and placeholder to "Enter other attended by (Max 20 characters)"
+- Update the  conditional check from "Others" to "OTHERS"
+
+ChildCareAndServices.vue
+- Set all the input fields & selection to upper case
+
+Note: See Trello comments for detailed updates and other findings.
+
+==============================================================
+==============================================================
+
+UPDATE DEV: 09-24-2025
+eCare: v4.13.4
+
+I. ECLAIMS - CF1
+
+CFForms.vue
+- Update the component from Cf1Page1 to CF1.vue
+
+CF1.vue
+- Create a call that will call the API _get_phic_pdf_template.php for CF1 
+- Use the response to display the PDF of the form.
+- Modified the content of pdf and align the data
+  Note : I've completed populating the CF1 for those available data from the props. 
+  However the other fields remain unfilled since they are not yet included in api.
+
+Note: See Trello comments for detailed updates and other findings.
+
+II. WEB REGISTRATION
+
+WebRegistration.vue
+- Change the label of OFFLINE TRANSACTION to POST TRANSACTION in data encoder department.
+- Modified line 49 from {{process}} to {{process==='OFFLINE TRANSACTION' ? 'POST TRANSACTION' : process}}
+
+==============================================================
+==============================================================
+
+UPDATE DEV: 09-29-2025
+eCare : v4.13.5
+
+1. EMR - OBYGYNE - PRENATAL - SCREENING
+- Backend Request: requested to add "selected" in returned api data in prenatal screening 
+( Status : Delivered by sir Harvy ) 
+- Updates: Fixed the glitch encountered in screening if the selected option is No ( Admission/Data Encoder/ Doctor )
+
+- Components with updates
+	I. components - admin - Consultation - Consultation.vue
+	   - modified the mutationStatus method for prenatal screening.
+           - removed the filter condition for screendate , disabled and selected=='Yes'
+	II. components - emr   - ob-gyne      - Main.vue
+           - add condition to clear the screendate if the selected data is No
+	   - return also the selected data 
+	III. components - emr   - ob-gyne      - prenatal-Screening.vue
+           - removed the default Yes to screening.selected
+
+
+
+2. Data Encoder - NEW MEMBER REGISTRATION
+  AIPostEncoding.vue
+  - add item-text="category_name" in line 150 and 151 autocomplete selection
+
+
+3. e-claims/PatientList.vue
+  - Added new column Eclaims Package in Patient List from the value of phic_packages in _get_eclaims_eligible_list.php 
+    and displayed the data using v-chip
+  - Changes applied in both Nurse Station and Credit & Collection
+
+==============================================================
+==============================================================
+UPDATE DEV:10-20-2025
+eCare : 4.13.9
+
+RECEIPT DATA 
+   1 Input Forms - Certification - Receipt Data  
+	1.1 Certification.vue 
+            - Add Receipt Data input fields
+            - Add data property for receipt_data
+            - Add receipt_data in getCertificationData method
+            - Add new method name 'receiptDataTotalAmount()' to sum the medicine and medical supplies total
+
+        1.2 InputForms.vue
+           Method : checkSubmitData,checkSaveChanges,beforeRouteUpdate
+           - add additional validation for receipt_data since all fields are required.
+           ADD METHOD : validateReceiptDataMedicine()
+           -  used in checkSubmitData, checkSaveChanges and beforeRouteUpdate required validation
+
+   2. Cf-Forms - Receipt Data
+	2.1 CFForms.vue
+        - Add a new "Receipt Data" button
+        - New component for Receipt Data, import it, and add it to the components section
+        - Add a data property named receipt_data to store medicine, medical supplies, and receipt data [props]
+        - Assign values to receipt_data inside the getCformsData method  
+          (including medicine, medical supplies, and receipt data).
+
+       2.2 ReceiptData.vue 
+        - New component for  CFForms - Receipt Data print and view.
+
+
+==============================================================
+==============================================================
+
+UPDATE DEV: 11-17-2025
+eCare : 4.13.10
+
+1. Add a query parameter string for all the api and controller
+  Js File : Services/index.js
+  - add ( data_query = mixin.methods.getQueryKey() and ?${data_query} )
+  
+2. Services 
+  Js File : Services/index.js
+  Affected Components : CFForms.vue,
+                        InputForms.vue,
+                        PatientList.vue,
+                        PostTransaction.vue,
+                        AccreditationSignature.vue,
+                        Certification.vue,
+                        CourseInTheWard.vue,
+                        Maternity.vue,
+                        PatientConfinement.vue,
+                        PatientData.vue,
+                        PhysicalExamination.vue,
+                        EkonsultaSubmission.vue
+  - Map the api/controller if existing in Services/index.js. 
+    If existing - change the response structure of the api in the affected components.
+    If the api/controller is not existing - create a function
+
+3. Assign Facility : Admin page (Ekonsulta Accredited). 
+   Remove the column of Assign Facility in Ekonsulta Report → Submission Report.
+   
+   SubmissionReport.vue
+	- Data : headers
+  		Remove : { text: 'Assigned Facility', value: 'Prv_name', width:"350px", sortable: false, align:'center'}
+	- Method: convertToExcel
+  		Remove : { ...data_style, column: 'Assigned Facility', value: value => value.Prv_name, width: 60,}
+  - Method : searchRecord
+      From this.headers[10].text to this.headers[9].text
+      From this.headers[11].text to this.headers[10].text
+
+4. Posting Encoding 
+  - AdditionalInfomation.vue
+      Update the :rulesand label  by adding conditions based on whether the field is required or optional
+
+  - WebRegistration.vue
+      Remove the condition of what component to use
+      Remove the AIPostEnconding in import and components
+
+5. Date format validation - User Verification
+   UserVerification.vue
+   - Add new data property verification_rules_birthdate and birthdate_err_msg
+   - Update the text field rule & :error
+   
+   mixin.js
+   - Add  method validateBirthDate for the following validations
+     > Invalid date format 
+     > Birthdate exceeds the maximum allowed age.
+     > Invalid date format for month or day.
+     > Birthdate must not be greater than the current date
+
+6. Ekonsulta list
+   EkonsultaSubmission.vue
+     > Add column Transaction Encoding Date and Consultation Date
+      { text: 'Transaction Encoding Date', value: 'pTransDate', sortable: false, align:'center'},
+      { text: 'Consultation Date', value: 'date_discharged', sortable: false, align:'center'},
+
+7. Save Ekonsulta - Add condition - if no diagnosis set the is_emr value to 0 else 1
+   EMRConsultation.vue
+    - The selected_icd data property holds the primary and secondary selection values. 
+      In case there is no selected value,data property is set to an empty object.
+      I add filter to get the total count of items with an icd_code setup
+      to ensure that I get the correct conditon if with diagnosis setup set to is_emr=1 else 0 
+      > emr_value = 0
+        if(this.selected_icd.filter(item => item.icd_code).length > 0) {
+          emr_value = 1
+        }
+      > from is_emr : 0 to is_emr: emr_value
+
+8. Provider Registration
+   ProviderRegistration.vue 
+   -  add readonly on the following input fields
+      Provider Address
+      Philhealth Accreditation Number
+      Provider Email Address
+      Provider Contact Person
+      Provider Telephone Number
+      
+  Note: See Trello comments for detailed updates and other findings.
+==============================================================
+
+UPDATE DEV: 11-21-2025
+eCare : V4.13.14
+
+1. Add discharged date in trn_add_consultation.php payload
+   Consultation.vue
+   Method: generateConsultationPayload
+          Add - date_discharged: this.offline_date_discharge ? this.$moment(this.offline_date_discharge).format('YYYY-MM-DD') : undefined
+
+2. Add PENDING Tab in Ekonsulta Submission
+   EkonsultaSubmission.vue
+
+3. E-claims - Course In Ward - if the amount is null force set to 0
+   CourseInTheWard.vue 
+   - Affected Process : Drugs and medicine,Procedure and Medical Supplies
+   PatientConfinement.vue
+   - Glitch Correction - viewing Patient Confinement after Course In Ward shows no procedures, 
+     but opening Patient Confinement first displays the correct procedure/s.
+
+4. Encoder - Add household - set gender selection to required field
+   - Added if else condition form validation in saveEdit if the process is ADD HOUSEHOLD
+     
+5. Update the 2 newly added column 
+   EkonsultaSubmission.vue 
+    api : _get_ekonsulta_eligibility_list.php
+    FROM Date Admitted TO Encoding/Created Date
+    FROM  Discharged date TO Date Admitted
+
+==============================================================
+
+UPDATE DEV: 11-28-2025
+eCare : 04:14.0
+
+1. Refactor CF1
+    CF1.vue ( with updates )
+    main.js ( with updates  - add CF1 )
+    reference/eclaims-forms/cf1.js ( new file )
+
+2. Ekonsulta - add Remarks Column ( for pending tab list of pending requirements )
+   EkonsultaSubmission.vue
+
+==============================================================
+
+UPDATE DEV: 12-04-2025
+eCare : 04:14.0
+
+1.Konsulta Receipt
+  KonsultaSubmission.vue ( with updates )
+  TransactionDialog.value
+    - Add button that triggers the download of the Konsulta Receipt
+  KonsultaReceipt.vue ( new file )
+  mixin.js ( add dateTimeToday method for datetime now )
+
+==============================================================
+
+UPDATE DEV: 12-11-2025
+eCare : 04.14.1
+
+1.Ekonsulta Submission - Validation Report
+  KonsultaSubmission.vue
+  - Enhance the validation dialog ( added note and fixed the error viewing )
+  -  Add button that triggers the download of the Konsulta Validation Report
+  -   Add function downloadValidationReport
+2.Ekonsulta - Filter 
+  KonsultaSubmission.vue
+  -  Remove the @change=""searchRecord"" in tab that automatically triggers the searchRecord that contains form validation
+  - Add new watch function for default view and tab selection checker
+      > Add condition oldVal === null  for the default view checker when the user visits the Konsulta page.
+        No action has been made yet, so required field red alerts should not appear.
+      > Add this.tranche_value=="""" && this.start_date=="""" && this.end_date==""""
+      Handles cases where the user clicks or visits the tabs without performing any action in the search/filter"
+
+==============================================================
+
+UPDATE DEV: 12-15-2025
+eCare : 04.14.1
+
+1.Ekonsulta Submission 
+  EkonsultaSubmission.vue
+  - Fixed the glitch encountered in the Date Admitted/Date of Consultation. 
+    Also renamed Transaction Encoding Date to Transaction Creation Date, and Consultation Date to Date Admitted
+
+==============================================================
+UPDATE DEV: 12-16-2025
+eCare : 04.14.1
+
+1. Patient Information - Edit Info
+   AdditionalInformation.vue
+   - Allow gender edit
+
+==============================================================
+UPDATE DEV: 12-17-2025
+eCare : 04.14.1
+
+1. Web Registration - Encoder - Priority Care 
+   AdditionalInformation.vue
+   - Set the Priority Care field required ( front desk and encoder )
+2. Konsulta Submission Receipt Enhancement
+   KonsultaReceipt.vue 
+   - Enhance the pdf content
+
+==============================================================
+UPDATE DEV: 12-18-2025
+eCare : 04.14.1
+
+1.  Copy/transfer the component data from eKonsulta – Provider Accreditation to Philhealth Provider Migration & Setup
+    admin-left-navigation.json
+      - Add new list Provider Accreditation
+      - Removed the Provider Accreditation in Ekonsulta
+    Navbar.vue
+      - Update the component for Provider Accreditation
+    admin/philhealth-migration-setup/provider-accreditation
+      - Add new folder and component for Provider Accreditation
+      (copied the component data from eKonsulta – Provider Accreditation)
+
+2. Eclaims and Ekonsulta Provider Accreditation
+   admin/philhealth-migration-setup/provider-accreditation/Main.vue 
+   - Put the Eclaims and Ekonsulta Provider Accreditation in one component and use tabs
+   admin-left-navigation.json
+   - Removed the Eclaims navigation
+
+==============================================================
+UPDATE DEV: 01-02-2026
+eCare :04.14.1
+
+1.Change The UI of Report Generate Module/Non-Ekonsulta Member and Add Konsulta Member filtering
+    NavBar.vue - update the route component from nonKonsulta to Nain.vue 
+     admin-left-navigation.js - update the url
+     admin-reports-Main.vue
+     - New component
+     admin-reports-KonsultaMember.vue
+     - New component
+    -  used the url : resources/api/_get_ekonsulta_data.php
+     admin-reports-NonKonsultaMember.vue 
+    - Copied the old component 
+    - used the url : resources/api/_get_ekonsulta_data.php
+       
+==============================================================
+UPDATE DEV: 01-05-2026
+eCare :04.14.1
+
+1.Fixed the displayed null value in Eligibility page contact and landline number
+    EligibilityGen.vue 
+    - add condition if null display empty
+
+==============================================================
+UPDATE DEV: 01-05-2026 to  01-13-2026
+eCare :04.15.0
+
+EDIT MIGRATED TRANSACTION
+
+Eligibility
+Main.vue
+EligibilityGen.vue
+PatientReferralList.vue
+PatientTransactionList.vue
+- On Eligibility Main Page, a loading indicator will appear while fetching the Referral and Migrated Transactions via API.	
+- If referral data exists, the dialog will open automatically.
+  There are no referrals or migrated transactions, the button will be disabled."	
+- The dialog can also be triggered when the user clicks the [View Referrals and Migrated Transaction] button.	
+- The user can select only one transaction at a time, either from Referral or Migrated Transactions.
+  The button will automatically be disabled once a transaction is selected and will only be enabled again if the selection is canceled."	
+- To cancel selected transaction, a Cancel option is provided to clear the selection.	
+- If the user opens the dialog but wants to proceed with a different transaction, an option “CONTINUE WITH DIFFERENT TRANSACTION” is available.	
+
+Consultation.vue
+- added populateTransactionData and getPatientST to populate the data from the selected_transaction.
+- added selected_transaction data property
+- added computed : from_migration to check whether the fields should be disabled if the data comes from a migration
+ConsultationGen.vue
+- added props from_migration and :disabled="from_migration"
+
+PhysicianDiagnosis.vue
+- added props from_migration,selected_transaction and :disabled="from_migration"
+PhysicalExamination.vue
+- added getPatientST to populate the physical data from the selected_transaction.
+- added props from_migration,selected_transaction and :disabled="from_migration"
+
+SignsAndSymptoms.vue.vue
+VaccinationRecord.vue
+Ncdqans.vue
+MedicalRecords.vue
+MedicalHistory.vue
+CovidVaccination.vue
+ob-gyne
+- added props from_migration and :disabled="from_migration"
+
+==============================================================
+UPDATE DEV: 01-15-2026
+eCare : 04.15.0
+
+Add the facility name to any file that does not yet have one in 
+Admin Portal - Downloadable Excel
+
+Components:
+admin/reports/medical-transaction/Main.vue
+SectionA.vue
+SectionB1.vue
+SectionB2andB3.vue
+SectioncC1andC2.vue
+SectionC3andC4.vue
+SectionE.vue
+SectionFGHI.vue
+M2.vue
+EkonsultaMember.vue
+SubmissionReport.vue
+
+Updates: added this.$store.state.prv_data.provider_name in file name
+
+
+==============================================================
+UPDATE DEV: 01-16-2026
+eCare : 04.15.0
+
+Consultation.vue
+- populate the data from selected_transaction
+  //DATE ADMITTED AND DISCHARGE
+  this.offline_date_admitted  = this.selected_transaction?.date_admitted  && this.selected_transaction?.date_admitted !== 'N/A' ? this.selected_transaction.date_admitted : ''
+  this.offline_date_discharge = this.selected_transaction?.date_discharged && this.selected_transaction?.date_discharged!=='N/A' ? this.selected_transaction.date_discharged : ''
+    
+EKonsultaSubmission.vue
+For Submission & Validation table
+- Display the Validation Status using v-chips
+For Pending table
+- Removed the remarks column
+- Update the header name from Status to Validation Status
+- Display the  Validation Status using v-chips
+
+==============================================================
+UPDATE DEV: 01-19-2026
+eCare : 04.15.1
+
+Main.vue
+- Method : getTransactionRecords 
+  - show only migrated data with no lab result ( using keyname: lab_result_exist )
+    this.transaction_data.data = response.data.filter(item => !item.lab_result_exist)
+
+==============================================================
+UPDATE DEV: 01-20-2026
+eCare : 04.15.1 
+
+1. Edit Migration
+
+Consultation.vue
+- apply :disable="from_migration" in purpose of visit/service availed
+- add in payload ( method:updPreConsultation)
+  doctor_code: this.$store.state.usr_credentials.user_type === '9-1' && this.from_migration && this.doctor_data.doctor_code ? this.doctor_data.doctor_code : undefined,
+  doc_phic_acc_no: this.$store.state.usr_credentials.user_type === '9-1' && this.from_migration && this.doctor_data.doctor_phic_account_no ? this.doctor_data.doctor_phic_account_no : undefined,
+  doc_prc_license: this.$store.state.usr_credentials.user_type === '9-1' && this.from_migration && this.doctor_data.doctor_prc_license ? this.doctor_data.doctor_prc_license : undefined,
+  doctor_tin: this.$store.state.usr_credentials.user_type === '9-1' && this.from_migration && this.doctor_data.doctor_tin ? this.doctor_data.doctor_tin : undefined, 
+     
+Main.vue
+- if the filtered migrated transaction is equal to 0 disable the button for referral and transaction
+
+2. Recommended Filename Convention
+   FacilityName – ModuleName – DateGenerated.xlsx 
+
+==============================================================
+
+UPDATE DEV: 01-21-2026
+eCare : 04.15.1
+
+KonsultaMember.vue
+      -  Remove the td for the “Total count of eKonsulta Members”
+
+==============================================================
+
+UPDATE DEV: 01-21-2026
+eCare : v4.15.2
+
+Add a date range selector and a “Load Selected Dates” button to the Medicine Consumption Report.
+reports/medicine-consumption/Main.vue
+- Add data property : start_date,nd_date,max_start_date,filtered_tbl_items,empty_validation
+- Add method:getMedicineComsuptionDateRange to filter the result in tbl_items and store it in .filtered_tbl_item
+- in table update the item used from :items="tbl_items" to :items="filtered_tbl_items"
+- add Date Range filtering 
+
+
+==============================================================
+
+UPDATE DEV: 01-26-2026
+eCare : v4.15.4
+
+EkonsultaSubmission.vue
+- Added this code to fixed the cell of Remarks if the total failed is greater than 0
+  ...(this.failed_count && {
+          columnStyles: {
+            pRemarks: { cellWidth: 40 }
+          }
+  })
+
+
+==============================================================
+UPDATE DEV: 01-23-2026
+eCare : v4.15.5
+
+Rbs.vue and Ogtt.vue
+- Added  data property conversion_unit with default value 'C'
+- Added radion button for unit type ( Conventional and SI unit )
+- Added if else for the Conventional and SI text fields and labels.
+
+NOTE : Revert changes 02/05/2026
+
+==============================================================
+UPDATE DEV: 01-28-2026 to 01-29-2026
+eCare : v4.15.5
+
+1. Main.vue
+- Admin- Migration- fixed the spelling of "whether" 
+
+2. Ekonsulta Eligibility Status
+   admin-left-navigation.json
+   - Added Ekonsulta Eligibility Status under Ekonsulta tab
+
+   Navbar.vue
+   - Added/import  component EkonsultaEligibilityStatus.vue
+   - <EkonsultaEligibilityStatus v-else-if="$route.params.page === 'ekonsulta-eligibility-status'" />
+   - Import EkonsultaEligibilityStatus from '@/components/admin/ekonsulta/EkonsultaEligibilityStatus.vue'
+   - Added condition in watch $route line 258 to.params.page !== 'ekonsulta-eligibility-status'
+
+   EkonsultaEligibilityStatus.vue
+   - New Component
+   - Added form with input fields for PIN validation
+   - Added table for viewing the list of validated PIN
+   - Added option to  export the result to excel
+
+   Services/index.js 
+   - Added getEligibilityStatus 
+
+==============================================================
+UPDATE DEV: 02-04-2026
+eCare :  v4.15.6
+
+1. Refactor Services
+- removed in services/index.js and trasferred in global.js
+    getEkonsultaEligibilityChecker,
+    getDiagnosticExamResultList,
+    getDiagnosticExamResults
+- removed in services/index.js and trasferred in consultation/index.js  
+    getDoctorPatientListByPid,
+    getDoctorIssuedTranRecord,
+    getTeleConsultDoctorList,
+    getDoctorSchedule,
+    trnUpdDocSchedule,
+    trnUpdAcceptTeleconsult,
+    queueListCancellation,
+    getPatientRecordAndTransaction,
+    getMemberEligibilityLGU,
+    getTransactionEmrDoctorDiagnosis,
+    getPatientMedicalHistory,
+    getEmrChildVaccinationRecord,
+    getMemberVaccinationRecord,
+    getTransactionPreviousByType,
+    getTransactionClinicalAbstract,
+    getPhicLibrary,
+    getTransactionEmrObGyne,
+    getPatientMedicine,
+    trnUpdatePatientTranRecord,
+    trnUpdatePreConsultation,
+    trnAddEkonsulta
+
+2. Fixed the concern in Encoder/Admission null/undefined transaction_number and selected_icd
+    Function : saveEkonsulta 
+    - diagnostic_exam_trans_no: this.diagnostic_exam_result?.transaction_number ? this.diagnostic_exam_result.transaction_number : transaction_number,
+      icd_cpt_data: (this.selected_icd[0]?.procedures?.length ?? 0) > 0 ? 1 : 0,
+
+==============================================================
+UPDATE DEV: 02-05-2026
+eCare : v4.15.7  
+
+1.Medicine Inventory- History of Adjustment- Create an excel file for this report
+  InventoryAdjustment.vue
+   - Added method : exportToExcel
+   - Added data property generate_excel_loader: false
+   - Added a trigger button and loading dialog for excel download
+
+2. Add provider code in Eligibility Status payload
+   - EkonsultaEligibilityStatus.vue - provider_code: this.$store.state.prv_data.provider_code
+
+==============================================================
+
+UPDATE DEV: 02-06-2026 to 02-09-2026
+eCare : v4.15.9
+
+1. Code Review 
+   - Check/Fixed spaces, indent , naming used in all tasks.
+
+2. admin-left-navigation.json
+   - In Admin,change the label of the tab 'KONSULTA MEMBERS' to 'REGISTERED MEMBERS'
+
+3. Requested to update the provider_code to phic_token in Eligibility Status payload
+   EkonsultaEligibilityStatus.vue 
+   - this.$store.state.prv_data.phic_token in payload
+
+==============================================================
+UPDATE DEV: 02-10-2026
+eCare : v4.15.9
+
+Transfer Update PHIC Masterlist and QUEUE List api/controller to 
+- QUEUE List : nurse-station/queue-list/index.js
+- Update PHIC Masterlist : nurse-station/phic-masterlist/index.js
+
+==============================================================
+UPDATE DEV: 02-12-2026
+eCare : v4.15.10
+
+Add Pre-Consultation Apis/Controllers in consultation/index.js
+Transfer _get_teleconsult_doctor_list.php in global.js
+
+==============================================================
+UPDATE DEV: 02-16-2026
+eCare : 4.16.0
+
+Refactor Routes for Admin,Front Desk Pre Consultation and Pharmacist
+Transferred admin and pharmacist to new js file
+- admin/index : for admin Routes
+- pharmacy/index : for pharmacy routes
+- nurse-station/index : for Front Desk Pre Consultation
+
+==============================================================
+UPDATE DEV: 02-18-2026
+eCare : 4.16.0
+
+1. PhysicalExamination.vue
+    - Removed the condition age 4 years below
+      Computed : patient_astk_fields
+      Method: checkIfEmpty 
+    - Added condition for below 4 years old required fields for the following fields:
+      Hip,Limbs,Mid upper arm circle,Head Circle and Skin for thickness
+    - Method : getPatientRT
+      Removed the value 0 to empty
+    - Method : getPhysicalExamination
+      Removed the value 0 to empty    
+2. Ekonsulta Eligibility Status : Fixed raised errors in console
+3. Services/index.js
+   - update the "./consultation" to './consultation/admission/index' ( incorrect js directory )
+     for getPatientReferralTransaction
+
+==============================================================
+UPDATE DEV: 02-19-2026
+eCare :  4.16.0   
+
+EkonsultaSubmission.vue
+- Added start_date and end_date in _get_ekonsulta_validation_reports.php payload
+
+==============================================================
+UPDATE DEV: 02-20-2026
+eCare : 4.16.0
+
+Transfered Routes from index.js to the following routes directory:
+nurse-station/index.js
+eclaims/index.js
+prv_facility/pharmacy/index
+prv_facility/diagnostic/index
+prv_facility/index
+
+==============================================================
+UPDATE DEV: 02-23-2026
+eCare : 4.16.0
+
+Set  this.$store.state.prv_data.provider_code in components with static data provider_code: "EKDF21B239E8232403"
+Components: 
+eclaims/PatientList.vue
+eclaims/PostTransaction.vue
+e-benefit/code-scanning/CodeScanning.vue
+e-benefit/code-scanning/OfflineTransaction.vue
+e-benefit/web-registration/UserVerification.vue
+emr/EmrConsultation.vue
+store/index.js
+
+==============================================================
+UPDATE DEV: 02-25-2026
+eCare : 4.16.0
+
+Fixed the glitch encountered in the Assessment and General Survey payload where inputted data was not included
+
+EmrConsultation.vue
+ - Add emit in PhysicalExamination @getPhysicalExamination="getPhysicalExamination"
+
+PhysicalExamination.vue
+- Added this.$emit('getPhysicalExamination') in Method : getPhysicalExamination to trigger the getPhysicalExamination method
+  in the parent component, ensuring that data returned from the API is stored in pex_data.
+
+
+==============================================================
+UPDATE DEV: 02-25-2026 to 02-27-2026
+eCare : 4.16.0
+
+CourseInTheWard.vue,Certification.vue,PostTransaction.vue
+  - Traced/Fixed the glitch encountered in Course in the ward and Certification summary of fees. 
+    Laboratory/Procedures , Drugs and Medicine , Medical Supplies and Total.
+    
+
+==============================================================
+UPDATE DEV: 03-02-2026
+eCare : 4.16.0
+
+1. Services/phic/ekonsulta/index.js - Sir Matt Request 
+   - Services : getEkonsultaValidationReports use _get_ekonsulta_validation_reports for T1 and T2
+    From : let reps = payload.report_status === 'first_validation' ? '_get_ekonsulta_validation_reports.php' : '_get_ekonsulta_submit_validation.php'
+    To  : '_get_ekonsulta_validation_reports.php
+
+==============================================================
+UPDATE DEV: 03-03-2026
+eCare : 4.16.0
+
+1. Ekonsulta - Download Validation Report
+   - EkonsultaSubmission.vue 
+     - Added import "jspdf-autotable" to fix the loading issue while downloading
+
+==============================================================
+UPDATE DEV: 03-04-2026
+eCare : 4.16.0
+
+Eclaims - Patient Confinement - Update the newborn_care_package from string to array
+PatientConfinement.vue
+- Update the data property from string to array
+- Method : getPatientConfinementData set [] if returned data is null
+- Update the Ui from radio button to checkbox
+- Computed : disable_essential - use includes instead of === 'essential'
+- Method : checkDataStatus- use includes instead  of === 'essential'
+
+==============================================================
+UPDATE DEV: 03-05-2026
+eCare : 4.16.0
+
+Traced and fixed the cause of why the data is not updating in EMR: Assessment and General Survey
+PhysicalExamination.vue
+- added @blur="emitData()" in general survey
+  method: emitData add sessionStorage.setItem('mmxcHF4s3', this.$crypto.AES.encrypt(JSON.stringify(data), 'EMX246'))
+Consultation.vue
+-method: confirm, added  general_survey: this.general_survey,other_general_survey: this.general_survey_notes in patient_assessment.
+
+
+==============================================================
+UPDATE DEV: 03-10-2026
+eCare : v4.16.1
+
+Updated all UI with Konsulta text to Yakap
+admin-left-navigation.json
+EkonsultaSubmision.vue 
+EkonsultaReceipt.vue
+TransactionDialog.vue
+ekonsulta/ekonsulta-reports
+EkonsultaEligibilityStatus.vue
+philhealth-migration-setup/migration/main.vue
+philhealth-migration-setup/provider-accreditation/main.vue
+reports/konsulta-member
+Userverification.vue
+HouseholdScanner.vue
+EligibilityGen.vue
+CodeScanning.vue
+OfflineTransaction
+Consultation.vue
+EmrConsultation.vue
+emr/printable-form/ekass-epress/EkassEpress/Main.vue
+Ekass.vue
+KonsultaForm.vue
+
+
+==============================================================
+UPDATE DEV: 03-12-2026
+eCare : v4.16.3
+
+Code scanning - align the icon/text in window 1 v-cards
+
+CodeScanning.vue
+- Removed :flex-column justify-space-between
+- Update the ICON & TEXT INFO ( FROM COL to DIV ) 
+- Added css for the card icon and text
+
+==============================================================
+UPDATE DEV: 03-13-2026
+eCare : v4.16.3
+
+Post Encoding - Address Information
+Set required fields for the following address info
+- Region, provinces, municipalities, barangay and zipcode
+
+Additionalinformation.vue
+- Update the :rules from :rules="field_rules_admission" to :rules="field_rules"
+
+==============================================================
+UPDATE DEV: 03-16-2026
+eCare : v4.16.3
+
+Post Encoding - Employer Details
+- Show employer details in Admission/Post Encoding
+- Require the employer details if eclaims eligible
+
+AdditionalInformation.vue
+- Removed : && usr_credentials.department === 'Admission'
+- From :rules="field_rules_admission" to :rules="field_rules_eclaims"
+- Added condition v-if="member_data.eclaims_eligible" in span for asterisk
+- Added new computed field_rules_eclaims for eclaims eligibility checker and required option
+
+==============================================================
+UPDATE DEV: 03-17-2026
+eCare : v4.16.3
+
+Diagnostic Forms
+Change 
+1. label from <p> to <span> 
+2. from class="d-flex justify-end align-baseline" to class="form-div"
+3. Add hide-details in textfields and textarea
+
+ChestXRay.vue
+Creatinine.vue
+Ecg.vue
+Fbs.vue
+Fecalysis.vue
+Fobt.vue
+Hba1c.vue
+LipidProfile.vue
+Ogtt.vue
+OtherDiagExam.vue
+Papsmear.vue
+PpdTest.vue
+Rbs.vue
+Sputum.vue
+Urinalysis.vue
+
+
+==============================================================
+UPDATE DEV: 03-24-2026
+eCare : v4.16.3
+
+Revert EYAS to EKAS
+
+==============================================================
+UPDATE DEV: 03-24-2026
+eCare :  v4.16.4
+
+Change the filename in eclaims cf forms
+CFForms.vue
+CSF.vue
+CF1.vue
+CF2.vue
+CF3.vue
+
+
+==============================================================
+UPDATE DEV: 03-25-2026
+eCare : v4.16.4
+
+ESOA.vue
+Change the ESOA title from ount to Statement of Account
+
+CFForms.vue
+Change the downloaded filename for csm, receipt data and esoa
+
+==============================================================
+UPDATE DEV: 03-25-2026
+eCare : v4.16.5
+
+Fixed the UI in post encoding v-card
+OfflineTransaction.vue
+- Apply the same changes from the front desk to the encoder
+
+==============================================================
+UPDATE DEV: 03-25-2026 to 03-27-2026
+eCare : v4.16.5
+
+Eclaims - CFForms - CF4
+CFForms.vue - update the cf4 SAVE Pdf in method:save
+CF4.vue - new file
+cf4.js  - new file
+
+==============================================================
+UPDATE DEV: 03-27-2026
+eCare : v4.16.5
+
+cf3.js
+Add condition in PE file path.
+Add text wrap function for chief complaint
+
+==============================================================
+UPDATE DEV: 03-30-2026
+eCare : v4.16.7
+
+Cfforms.vue
+- update the method : print
+- update CSF tab from $route.params.configuration === 'csm'}" to $route.params.configuration === 'csf'}"
+
+CF1.vue, CF2.vue, CF3.vue, CF4.vue, CF5.vue, CSF.vue,
+- add ref pdf
+- add method: printPdf
+==============================================================
+UPDATE DEV: 03-31-2026 to 04-01-2026
+eCare : v4.16.8
+
+Cf3.js 
+- if the doctor sign path is null
+
+FROM 
+const doctor_sign_image = cforms_data.accreditation_and_signature.TRANSACTION.doctor_sign_path ? 
+await loadPng(cforms_data.accreditation_and_signature.TRANSACTION.doctor_sign_path) : []
+TO
+const doctor_sign_image = cforms_data.accreditation_and_signature.TRANSACTION.doctor_sign_path ? 
+await loadPng(cforms_data.accreditation_and_signature.TRANSACTION.doctor_sign_path) : ''
+
+Certification - Input Forms - Certification
+Summary of fees and professional fees
+- Method:calculateProfessionalBalance and calculateSummaryBalance 
+  Set to 2 decimal only
+- Add watch to calcu late balance if there are changes
+- Method : getCertificationData update the funding source label from DOH MAP to DOHMAP
+
+==============================================================
+UPDATE DEV: 04-06-2026
+eCare : v4.16.9
+
+Certification.vue,PhysicalExamination.vue,CourseInTheWard.vue
+- added document_id: this.selected_doct_type_holder.document_id in 
+trnAddEclaimsAttachedFiles (trn_add_eclaims_attached_files) payload
+
+==============================================================
+UPDATE DEV: 04-07-2026 to 04-08-2026
+eCare : v4.16.10
+
+Certification.vue
+  Method : addAttachedAdditional
+    Added the following datas: 
+      element.document_id = this.selected_doct_type_holder.document_id
+      element.group_type = this.selected_doct_type_holder.group_type
+      element.doc_type = this.selected_doct_type_holder.doc_type
+
+  Method: postFileOfAdditional 
+    - Added the following:
+      let file_datas = []
+      file_datas.push({document_id: this.post_attached_additional[i].document_id,group_type: this.post_attached_additional[i].group_type});
+    - With updates/changes
+      FROM: let new_name_file = `${this.selected_doct_type_holder.doc_type}_${this.selected_doct_type_holder.group_type}_${original_name}`;
+      TO: let new_name_file = `${this.post_attached_additional[i].doc_type}_${this.post_attached_additional[i].group_type}_${original_name}`;
+    - Removed the group_type and document_id in formData and replaced with file_datas.
+
+PhysicalExamination.vue
+  Method: addAttachedPertinent
+    Added the following datas: 
+      element.document_id = this.selected_doct_type_holder.document_id
+      element.group_type = this.selected_doct_type_holder.group_type
+      element.doc_type = this.selected_doct_type_holder.doc_type
+
+  Method: postFileOfPertinent
+    - Added the following:
+      let file_datas = []
+      file_datas.push({document_id: this.post_attached_pertinent[i].document_id,group_type: this.post_attached_pertinent[i].group_type}); 
+
+    - With updates/changes  
+      FROM: let new_name_file = `${this.selected_doct_type_holder.doc_type}_${this.selected_doct_type_holder.group_type}_${original_name}`;
+      TO: let new_name_file = `${this.post_attached_pertinent[i].doc_type}_${this.post_attached_pertinent[i].group_type}_${original_name}`;
+    - Removed the group_type and document_id in formData and replaced with file_datas.
+
+CourseInTheWard.vue
+  Method: addAttachedSurgical
+    Added the following datas:
+      element.document_id = this.selected_doct_type_holder.document_id
+      element.group_type = this.selected_doct_type_holder.group_type
+      element.doc_type = this.selected_doct_type_holder.doc_type
+  Method: postFileOfSurgical
+    - Added the following:
+      let file_datas = []
+      file_datas.push({document_id: this.post_attached_surgical[i].document_id,group_type: this.post_attached_surgical[i].group_type});
+    - With updates/changes
+      FROM: let new_name_file = `${this.selected_doct_type_holder.doc_type}_${this.selected_doct_type_holder.group_type}_${original_name}`;
+      TO: let new_name_file = `${this.post_attached_surgical[i].doc_type}_${this.post_attached_surgical[i].group_type}_${original_name}`;
+    - Removed the group_type and document_id in formData and replaced with file_datas.
+
+  Method: addAttachedMedicine
+    - Added the following:
+      element.document_id = this.selected_med_doct_type_holder.document_id
+      element.group_type = this.selected_med_doct_type_holder.group_type
+      element.doc_type = this.selected_med_doct_type_holder.doc_type
+  Method:postFileOfMedicine
+    - Added the following:
+      let file_datas = []
+      file_datas.push({document_id: this.post_attached_medicine[i].document_id,group_type: this.post_attached_medicine[i].group_type});
+    - With updates/changes
+      FROM: let new_name_file = `${this.selected_med_doct_type_holder.doc_type}_${this.selected_med_doct_type_holder.group_type}_${original_name}`;
+      TO: let new_name_file = `${this.post_attached_medicine[i].doc_type}_${this.post_attached_medicine[i].group_type}_${original_name}`;
+    - Removed the group_type and document_id in formData and replaced with file_datas.
+
+cf3.js 
+  Added condition in file_path for course_in_the_ward uploaded attachments
+
+==============================================================
+
+UPDATE DEV: 04-16-2026
+eCare : v4.16.11
+
+EMRConsultation.vue
+Method : getPatientInfo
+Updates: Added await
+if (this.$store.state.prv_config.ekonsulta_accre) {
+    await this.checkEkonsultaEligibility();
+}
+if (this.$store.state.prv_config.eclaims_accre) {
+    await this.getEclaimsWebService();
+}
+
+Method : checkEkonsultaEligibility and getEclaimsWebService
+Updates: Added async
+Reason of updates: There was a conflict where getEclaimsWebService could finish execution before checkEkonsultaEligibility, 
+resulting inaccurate data stored in eligible_data.
+
+PhysicalExamination.vue
+Mounted : this.filterAssessmentStatus();
+Updates: Removed the filterAssessmentStatus in mounted and put it in watch
+Reason of updates: Upon checking, eligible_data used in filterAssessmentStatus was undefined during component mount.
+To ensure the correct data is loaded, transferred it in watch so it runs once eligible_data is available.
+
+==============================================================
+
+UPDATE DEV: 04-21-2026
+eCare : v4.16.11
+
+PostTransaction.vue
+Method: postSubmitToPHIC
+Added  in line 1889 : && request_key !== 'save_changes'
+if(this.$store.state.usr_credentials.user_type === '2-3' && request_key !== 'save_changes'){
+  this.generateEncryptedFiles(request_key);
+}
+
+ESOA.vue
+Reason of update: Used the Base64 patient and HCI file path to display the signature in PDF download.
+FROM
+trans_detail.hci_sign_path
+trans_detail.patient_sign_path
+TO
+esoa_data.TRANSACTION.hci_sign_path
+esoa_data.TRANSACTION.patient_sign_path
+
+==============================================================
+
+UPDATE DEV: 04-27-2026
+eCare : v4.16.11
+
+ESOA.vue
+Method : getBillingData
+Added this.esoa_data2.DISCHARGED_DIAGNOSIS.SECONDARY in itemized_charges
+
+==============================================================
+
+UPDATE DEV: 04-27-2026
+eCare :  v4.16.13
+
+Consultation.vue
+Method : confirm
+Added response.data = this.responseDataDecryption(response.data)
+
+Remove the default 0 in mid_upper_arm_circle
+Data Property : id_upper_arm_circle
+- changed from mid_upper_arm_circle: '0' to mid_upper_arm_circle: ''
+Method: getPatientRT and getPhysicalExamination 
+- removed the condition in mid_upper_arm_circle
+
+
+==============================================================
+
+UPDATE DEV: 04-30-2026
+eCare :  v4.16.14
+
+AdditionalInfomation.vue
+Mounted: this.setPriorityCareDefaultValue()
+Added Method: setPriorityCareDefaultValue
+- auto select Senior Citizen if age is equal or greater than 60
+
+
+==============================================================
+
+UPDATE DEV: 05-04-2026
+eCare :  v4.16.15
+
+1. Concern : Admin- Registered User- Update of S2 is successful but when viewed the data is not displayed.
+Registeredusers.vue
+Method: updateRegistration
+Added new payload key  "doc_s2_no" and "doc_ptr_no"
+
+2. Registered Members- Non-Yakap Members Report- For Fixing- The report includes Yakap Eligible Members in the display.
+KonsultaMember.vue
+Added Registration Column
+Removed Date Created
+Fixed excel report
+
+NonKonsultaMember.vue
+Removed Date Created
+Added Assigned Date
+Fixed excel report
+
+==============================================================
+
+UPDATE DEV: 05-05-2026
+eCare :  v4.16.16
+
+UserRegistration.vue
+Method: submitNewUser
+- Added condition for the account_name return error
+Note: Backend update - update the return of error from string to array object 
+      - Copied the returned format for username duplication
+
+
+==============================================================
+
+UPDATE DEV: 05-05-2026
+eCare : v4.16.16
+
+MedicalHistory.vue
+Method: addPastHistory
+- Added validation in selection of past medical history if not in the list & others
+==============================================================
+
+UPDATE DEV: 05-07-2026
+eCare :   v4.16.17
+
+1. EF-2: Correct the spelling in Excel file in Yakap Member
+Admin - Yakap Member
+KonsultaMember.vue
+- Fixed the spelling of registered in Yakap excel report
+
+2. Registration Principal PHIC Pin
+HouseholdScanner.vue
+- Method: getMemberData
+- Added phic_pin: lgu_data.mem_phic_pin || ''  to retrieve the principal PHIC PIN 
+  and automatically populate it in the dependent registration Principal PHIC PIN text field.
+
+3. EF-3: Registration Principal PHIC Pin
+AdditionalInformation.vue
+- Added primary_phic_pin textfield and N/A checkbox
+- Added data property : check_no_principal_phic_number: false and primary_phic_pin: '',
+- Added new method: checkPrincipalPhicNumber() - when checked a dialog warning will appear.
+- Method: getSessionData , added this.primary_phic_pin = get_session.primary_data?.phic_pin
+- Method: redirect , added phic_pin: this.primary_phic_pin
+- Method: submitRegistration , added primary_phic_pin: this.add_member_household ? this.primary_phic_pin : this.member_data.mem_phic_pin
+- Added computed : primary_phic_pin_required()
+
+4. EF-6: Dispensing of Medicine
+Dispensing of Medicine
+e-benefit/dispense-medicine/Main.vue
+- Added start_date and end_date text fields.
+- Added a LOAD SELECTED DATES button to trigger the API request.
+  Used a button trigger instead of onchange to avoid unnecessary API calls on every field update.
+- Added data property 
+  start_date (with default current date value) and
+  end_data  ( with default data 7 days ahead )"
+- Changed the value from date_admitted to date_created
+
+==============================================================
+
+UPDATE DEV: 05-11-2026
+eCare :  v4.16.18
+
+UserVerification.vue
+Fixed the spacing from PHIC PIN* to PHIC PIN *
+
+==============================================================
+
+UPDATE DEV: 05-11-2026
+eCare :  v4.16.19
+
+1. Replace the format date of Date Created from YYYY-MM-DD to MM-DD-YYYY in Dispensing of Medicine
+e-benefit/dispense-medicine/Main.vue
+- getPrescribedMedicineByPID
+  date_created: this.formatDateAndTime(element.date_created)
+  Used the method formatDateAndTime in mixin 
+
+==============================================================
+
+UPDATE DEV: 05-12-2026
+eCare :  v4.16.19
+
+Change the dispensing medicine data selection date range. 
+The end date should be the current date, and the start date should be 7 days before the current date.
+
+e-benefit/dispense-medicine/Main.vue
+- start_date: this.$moment().add(-7, 'days').format('YYYY-MM-DD'),
+  end_date: this.$moment().format('YYYY-MM-DD'),
+
+
+Medicine Inventory - added date range filtering
+
+Inventory.vue
+- Added in data property tbl_headers for DATE CREATED
+- Added new data property start_date: this.$moment().add(-7, 'days').format('YYYY-MM-DD') and end_date: this.$moment().format('YYYY-MM-DD')
+- Method: getInventoryList
+  Added start_date: this.start_date, end_date: this.end_date in payload
+- Added start date and end date. Also refactored the layout.
+- Added the date created for user reference since the date range filtering is based on date_created
+- Update also the expiration date format  to mm-dd-yyyy"
+- Added the Date Created in export excel
+
+==============================================================
+
+UPDATE DEV: 05-13-2026
+eCare : v4.16.19
+
+Separate Non Yakap member
+
+NonKonsultaMember.vue
+- Added data property non_yakap_member_options
+- Added additional column for table header : tbl_headers column PHIC PIN
+- Changed the format of birthday to mm-dd-yyyy
+- Added computed computed filtered_tbl_items (use the computed filtered_tbl_items in table items)
+- Added Phic Pin in excel generation
+
+KonsultaMember.vue
+- Fixed also the date format in Yakap Members birthdate and assigned date to align with the format used in nonyakap members.
+
+==============================================================
+
+UPDATE DEV: 05-19-2026 to 05-22-2026
+eCare : 4.17.1
+
+EF-16 : Eclaims/Yakap downloading XML file
+
+- admin-left-navigation.json { title": "XML Downloads","path": "/admin/xml-downloads" }
+- NavBar.vue
+  <XmlDownload v-else-if="$route.params.page === 'xml-downloads'" />
+  import XmlDownload from '@/components/admin/philhealth-migration-setup/xml-download/Main.vue'
+  added XmlDownload in components
+  added  && to.params.page !== 'xml-downloads' in watch $route
+- xml-download/Main.vue - new component
+- services/admin/index.js - added eclaimsMigrationDownload and downloadYakapDisengagementXml
+
+==============================================================
+
+UPDATE DEV: 05-25-2026
+eCare : v4.16.21
+
+Change the length of input fields of Philsys ID from 12 to 16
+
+AdditionalInfomation.vue
+- Changes the maxlength from 12 to 16
+
+==============================================================
+
+UPDATE DEV: 05-25-2026
+eCare : 4.16.22
+
+Mother's Maiden Name
+In registration. Accept the “ - “ in the fields of mother’s maiden name.
+AdditionalInfomation.value
+- Method: textOnly  - added  event.which !== 45 in condition allowing to input "-"
+Note: this method is used in Patient middle name and Mother's Maiden Name.
+
+==============================================================
+
+UPDATE DEV: 06-01-2026
+eCare : 4.16.23
+
+EF-36: Registration Age restriction
+
+UserVerification.vue
+Method: validateRegistration
+
+- changed the condition from >=18to >=16
+if(!this.princial_pwd){
+  verify_member = this.child_care_services || (this.calculateAge(this.birthdate) >= 16 || this.member_data.add_member_household)
+}
+
+- changes the alert from Registration for the pricipal member must be 18 and above. 
+to Registration for the pricipal member must be 16 and above.
+
+==============================================================
+
+
+UPDATE DEV: 06-03-2026
+eCare : 4.16.23
+
+EF-37: RX Issued Rollback
+
+ViewMedicine.vue
+Method: ViewMedicine.vue
+- Added data in tbl_itemsto be used in edit and delete for Partially Served status.
+  default_dispensed_medicine_status: data.dispensed_medicine_status,
+  default_total_dispensed_medicine: data.total_dispensed_medicine
+- Added condition in Medicine Table - Status Column
+Method: removeMedicine
+- Added condition for Partially Served status - delete will reset the dispensed medicine to its original quantity.
+- Added condition in DISPENSE MEDICINE :disabled - disable only has_selected_medicine and has_edited_medicine are both false
+
+OTCMedicine.vue
+Method: doneOTCMedicine
+- Added const status =  this.medicine_data.default_dispensed_medicine_status
+- Used this new variable status in the following datas/conditions
+==============================================================
+
+UPDATE DEV: 06-03-2026
+eCare : 4.17.0
+
+EF-45: Eligibility Page
+
+e-benefit/Eligibility/Main.vue
+Method: callData
+Added a condition to trigger only the validateUserHasReferral if the process_type is LGU and eligibility_status is not
+Patient is Currently Admitted and Transaction On Going.
+const eligibility_status = this.member_data?.member?.eligibility_status
+if (this.process_type === 'LGU' && !['Patient is Currently Admitted', 'Transaction On Going'].includes(eligibility_status)) {
+  await this.validateUserHasReferral()
+}
+
+Note: Per checking the transaction alert condition is based on process_type and 
+this.member_data.member.eligibility_status. I applied the same condition in triggering validateUserHasReferral.
+
+==============================================================
+
+UPDATE DEV: 06-05-2026
+eCare : 4.17.0
+
+Ticket EF-48 : Add new key in trn_add_eclaims_attached_files.php
+
+PatientList.vue
+Method: eClaimProcessing
+- Added eclaims_status: item.eclaims_status in trans_detail
+
+PhysicalExamination.vue
+Method: postFileOfPertinent
+- Added rth: this.trans_detail.eclaims_status === "RETURN" ? 1 : 0 
+
+CourseInTheWard.vue
+Method: postFileOfSurgical and postFileOfMedicine
+- Added rth: this.trans_detail.eclaims_status === "RETURN" ? 1 : 0
+
+Certification.vue
+Method: postFileOfAdditional
+- Added rth: this.trans_detail.eclaims_status === "RETURN" ? 1 : 0
+
+==============================================================
+
+UPDATE DEV: 06-10-2026
+eCare : 4.16.23
+
+EF-51: Downloadable Excel file — SMDP staff suggested separating the full name into distinct fields: First Name, Middle Name, and Last Name.
+
+1. Member List - Yakap Member
+KonsultaMember.vue
+- Method: exportToExcel
+  Removed:  { ...style, width: 50, column: 'PATIENT NAME', value: value => value.patient_name },
+  Added: First Name , Middle Name and Last Name  
+- Method : getKonsultaMembers
+  Added : element.patient_name =  `${element.mem_first_name} ${element.mem_middle_name} ${element.mem_last_name} ${element.mem_suffix || ''}`,
+
+2. Member List - NonYakap Member
+NonKonsultaMember.vue
+- Method: exportToExcel
+  Removed: { ...style, width: 50, column: 'PATIENT NAME', value: value => value.patient_name },
+  Added: First Name , Middle Name and Last Name
+
+- Method : getNonKonsultaMembers
+  Added : element.patient_name =  `${element.mem_first_name} ${element.mem_middle_name} ${element.mem_last_name} ${element.mem_suffix || ''}`,
+
+3. Yakap Report - Submission Report
+SubmissionReport.vue
+- Method: convertToExcel
+  Removed: { ...data_style, column: 'Name', value: value => value.patient_name, width: 60,},
+  Added: First Name , Middle Name and Last Name
+  Others: Fixed also the spacing
+
+4. Yakap Report - FPE Report
+EkonsultaMember.vue
+- Method: getSectionAData
+  FROM : this.patient_data = response.data.members
+  TO: this.patient_data = response.data.members.map(items => {
+              const patient = `${items.mem_first_name} ${items.mem_middle_name} ${items.mem_last_name} ${items.mem_suffix || ''}`;
+              return { ...items, patient }
+      })
+- Method: exportToExcel
+  Removed:  { ...data_style, column: 'Registered Member', value: value => value.patient, width: 65},
+  Added: First Name , Middle Name and Last Name
+
+5. Yakap Submission
+ekonsulta/ekonsulta-unrestrict-submission/Main.vue
+- Method: searchRecord
+  FROM :  this.patient_data = response.data
+  TO :  this.patient_data = response.data.map(items => {
+              const pPatientFullname = `${items.pPatientFname} ${items.pPatientMname} ${items.pPatientLname} ${items.pPatientExtname || ''}`;
+              return { ...items, pPatientFullname }
+        })
+- Method: convertToExcel
+  Removed:  { ...data_style, column: 'Name', value: value => value.pPatientFullname, width: 60 },
+  Added : First Name , Middle Name and Last Name
+
+==============================================================
+
+UPDATE DEV: 06-22-2026
+eCare : 4.17.0
+
+EF-55 Ticket  
+- Adding Household – Additional Information: Add an error indicator on the PHIC Number field to indicate when the value is missing
+
+AdditionalInformation.vue
+- Changed the condition in label and checkbox
+- Changed the checkbox :rules to field_rules_phic_num
+Method: submitRegistration
+- Removed the error dialog for add household for gender and phic, already included in error dialog Field is empty/Invalid value.
+Computed 
+- New: field_rules_phic_num
+- Removed: field_rules_encoder
+
+==============================================================
+
+UPDATE DEV: 06-29-2026
+eCare : 4.17.1
+
+EF-83 Ticket
+UserVerification.vue
+Method: validateRegistration
+Current Process : member verification and other api calls used for other verifications are handled invalidateRegistration method.
+
+- Changes: validateRegistrationmethod 
+  - used to verify if the member is minor or not. Other api calls/validations is added in new method: verifyMemberRegistration
+- Added new method verifyMemberRegistration
+  - if the member is minor a dialog appears and confirm if will proceed in registering or not.
+    If proceed it will call this method for other verification/api calls.
+- Added additional emit @verifyMemberRegistration="verifyMemberRegistration" in alert component
+
+==============================================================
+ 
+UPDATE DEV: 06-30-2026 
+eCare : 4.17.1
+
+EF-79:Ekonsulta Data in Masterlist
+
+UserVerification.vue
+- Method: verifyMemberRegistration=
+  Added from_masterlist: ekonsulta_data.from_masterlist in lgu_data ( identifier if member is from masterlist or not )
+
+AdditionalInformation.vue
+- Method: getSessionData
+  Added this.from_masterlist = get_session.lgu_data?.from_masterlist || false
+
+- Added new computed disable_from_masterlist
+- Added date property: from_masterlist
+- Added css for selection text primary
+- With Changes in the ff input fields/selection:
+  First: No changes default disabled in registration
+  Middle: Added :disabled="disable_from_masterlist"
+  Last: No changes default disabled in registration
+  Suffix Name: Added:disabled="disable_from_masterlist"
+  Date of Birth: No changes default disabled in registration
+  Sex at Birth:  :class="[disable_from_masterlist ? 'text-primary' : '', 'body-2 pl-sm-0']" :disabled="disable_from_masterlist"
+  PHIC pin: Added :disabled="check_no_phic_number || disable_from_masterlist"
+  PHIC PIN NOT APPLICABLE CHECKBOX: Added :disabled="disable_from_masterlist"
+
+
+EF-77: Migration Transaction
+
+e-benefit/Eligibility/Main.vue
+- Added property migration_enabled- if the value is true show the migration else hide.
+- Added this.migration_enabled ? true : false in transaction_data.fresh_load data
+- Added the migration_enabled in dialog v-tab condition for migrated transactions
+- Added the migration_enabledin component EligibilityGen
+
+e-benefit/Eligibility/EligibilityGen.vue
+- Added the migration_enabled in props
+- Added the migration_enabled  in all conditions connected in migrated labels/titles 
+
+==============================================================
+
+
+UPDATE DEV: 07-01-2026
+eCare : 4.17.1
+
+EF-90: XML download for Yakap and Eclaims
+
+Navbar.vue
+- Added @downloadOverlayValue="downloadOverlayValue" in XmlDownload component
+- Added data property download_loading
+- Added overlay 
+- Added new method: downloadOverlayValue
+
+Main.vue
+- Added this.$refs.xml.reset() in tab_type watch
+- Added this.$refs.xml.reset() in method downloadXmlFileto  reset the form fields after download
+- Removed the loading_data and replace with this.$emit("downloadOverlayValue",true)
+- Added v-if condition in v-tabs
+  <v-tab v-if="$store.state.prv_data.ekonsulta_phic_acc_no">Yakap</v-tab>
+  <v-tab v-if="$store.state.prv_data.eclaim_phic_acc_no">E-Claims</v-tab>
+
+==============================================================
+
+UPDATE DEV: 07-06-2026
+eCare : v4.18.0
+
+EF-91: Display RTN & TCN number
+
+PatientList.vue
+- Added 
+  <td>{{  item.receipt_ticket_no }}</td
+  <td>{{ item.transmission_control_no }} </td>
+- Added additional column and change the with of eligibility and claim status
+  { text: 'Receipt Ticket No.', value: 'receipt_ticket_no', width: '150px', sortable: false },
+  { text: 'Transmission Control No.', value: 'transmission_control_no', width: '180px', sortable: false },
+  { text: 'Claim Status', value: 'claims_status', width: '180px', sortable: false },
+  { text: 'PHIC Eligibility Status', value: 'phic_member_eligibility_status', width: '170px', sortable: false },
+
+eConfirmation.vue
+- Added 
+  <v-col cols="12" sm="12" md="12" lg="12"> 
+    <h6 class="body-2">Receipt Ticket Number</h6>
+    <v-text-field v-model="track_status_holder.preceiptTicketNumber" readonly hide-details  dense> </v-text-field>
+  </v-col>
+
+==============================================================
+
+UPDATE DEV: 07-06-2026 to 07-07-2026
+eCare : v4.18.0
+
+EF-94: Add New UI for eclaims for member pin verification
+
+PatientList.vue and PinRetrievalForm.vue
+- Added in navbar { title: "Retrieve Member PIN", link: "/eclaims-retrieve-pin", icon: "fas fa-id-card" }
+PinRetrievalForm.vue
+- New vue component
+router/eclaims/index.js
+- Add new route /eclaims-retrieve-pin
+
+==============================================================
+
+UPDATE DEV: 07-07-2026 to 07-08-2026  
+eCare : v4.18.0
+
+EF-95: Add New UI for eclaims for healthcare profesionnal
+
+PatientList.vue
+- added in navbar { title: "HCP Accreditation Verification", link: "/eclaims-hcp-accreditation", icon: "fas fa-user-doctor" },
+DoctorAccreditationForm.vue
+- new method
+router/eclaims/index.js 
+- Added route eclaims-hcp-accreditation
+==============================================================
+
+UPDATE DEV: 07-09-2026
+eCare : v4.18.0
+
+EF-98: Displaying Voucher details in track status
+
+PatientList.vue
+- Method: getClaimsTrailStatus - Added condition if voucherNo is not null call getVoucherDetails method
+- New method: getVoucherDetails - get voucher details
+- Method: getTrackStatus added this.voucher_details = {}
+- Added data property voucher_details = {}
+- Added Voucher No. and Voucher Date in track status modal view
+
+==============================================================
+
+UPDATE DEV:  07-10-2026
+eCare : 4.18.1
+
+EF-112 Voucher Details
+
+PatientList.vue
+- data property voucher_details: {} and track_status_type: 0
+- Added tab for e-confirmation and voucher viewing
+- Added import WithVoucher from './with-voucher/Main.vue' in component and use this for voucher viewing
+
+e-claims/Main.vue
+- Added voucher no. , date and check no. 
+- Added print voucher
+
+e-claims/SummaryOfCharges.vue
+- Added spacing and with changes in Summary of Charges text from h2 to h4
+
+==============================================================
+
+UPDATE DEV:  07-13-2026
+eCare : 4.18.1
+
+EF-119: HCI Accreditation Verification and Search Member PIN
+
+Place a red asterisk (*) in the Middle Name field instead of marking it as optional, 
+since validation requires a middle name to return TRUE.
+
+DoctorAccreditationForm.vue and PinRetrievalForm.vue
+- Set the middle name to required field, added ...verification_rules in rules for form validation
+
+==============================================================
+
+UPDATE DEV:  07-13-2026
+eCare : 4.18.1
+
+EF-118: Additional info on the payload for _get_ekonsulta_submit_reports.php
+
+ekonsulta/ekonsulta-unrestrict-submission/Main.vue
+Method: submitTransaction
+- trans_data.append("submitted_by", this.$store.state.usr_credentials.username)
+
+==============================================================
+
+UPDATE DEV:  07-20-2026
+eCare : 4.18.1
+
+EF-127 : Yakap XML Record Extraction
+
+services/admin/index.js and services/index.js
+- Added encryptedXmlFileDownload for file_download
+
+admin/ekonsulta/ekonsulta-unrestrict-submission/Main.vue
+- Method: downloadXMLbyPass- added  xml_bypas, filename and pf
+
+TransactionDialog.vue
+- New method: saveByPassReport
+- Added condition in Download Encrypted File Report @click="alert.xml_bypass ? saveByPassReport() : saveReport()"
+- Added condition in Submit Report v-show="alert.downloadTextFile && this.$store.state.usr_credentials.department !== 'Admission' && !alert.xml_bypass" 
+
+==============================================================
+
+UPDATE DEV:  07-21-2026
+eCare : 
+
+EF-132 : Attachment Files viewing additional information
+
+Certification.vue
+CourseInTheWard.vue
+PhysicalExamination.vue
+- added css for attachment name hover text color to primary
+- v-menu for viewing additional information 
+
+==============================================================
+
+UPDATE DEV:  07-21-2026
+eCare : 4.18.4
+
+EF-135 : Admission dispensing of medicine
+
+Consultation.vue
+- Method: saveMedAdjustedQuantity- added lot_no: item.lot_no in payload
+
+==============================================================
+
+UPDATE DEV:  07-21-2026
+eCare : 4.18.5
+
+EF-138 : Static value of "phic_acc_no": "P92036233", in the payload for _get_provider_config.php
+
+SubmissionReport.vue
+- Method: searchRecord 
+  FROM : phic_acc_no: 'P92036233' 
+  TO phic_acc_no: this.$store.state.prv_data.ekonsulta_phic_acc_no
+
+==============================================================
+
+UPDATE DEV:  07-23-2026
+
+EF-73 : Eclaims Track Status
+
+PatientList.vue
+Method: getTrackStatus - add alert if the response is not true and show only the track status dialog if true.
+
+==============================================================
+
+UPDATE DEV:  07-23-2026
+
+EF-122 : Registration member save changes
+
+AdditionalInformation.vue
+Method: saveInformation - added form validation and age validation for required photo.
+
+==============================================================
+
+UPDATE DEV:  07-23-2026
+
+EF-80 : Eclaims Submit Button
+
+PatientList.vue
+- Method: eClaimProcessing- added  receipt_ticket_no: item.receipt_ticket_no in trans_details
+
+InputForms.vue
+- Added v-sheet !trans_detail.receipt_ticket_no in condition
+  <v-sheet v-if="trans_detail.editable && !trans_detail.receipt_ticket_no" @click="checkSubmitData('submit')" class="py-3 px-6 mt-2 btn-hover" elevation="1">
+
+

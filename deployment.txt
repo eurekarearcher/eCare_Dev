@@ -1,0 +1,48 @@
+npm run build:qa // Deployment for QA
+npm run build:demo // Deployment for DEMO
+npm run build:prod // Deployment for PROD
+
+======================================================================================
+
+Application version update example version (4.0.0)
+
+npm version major|minor|patch
+
+patch -> 4.0.1
+minor -> 4.1.0
+major -> 5.0.0
+
+======================================================================================
+
+Full command for QA Deployment
+npm version patch && npm run build:qa && npm run ecare-backup && npm run migrate:qa
+
+Application version update 4.0.1
+
+======================================================================================
+
+Command for DEMO Deployment
+npm run build:demo && npm run migrate:demo
+
+======================================================================================
+
+Command for PROD Deployment
+npm run build:prod
+
+
+SMART CARD READER GOOGLE CHROME
+
+1. Right-click on your desktop → New → Shortcut
+
+2.Paste the command as the shortcut target:
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --disable-web-security --user-data-dir="C:\chrome-dev"
+
+3. Click “Next”, name it something like Chrome GOOGLE FOR SMART CARD, and save.
+
+4. Now you can double-click that shortcut to launch Chrome with GOOGLE FOR SMART CARD.
+
+5. Type chrome://flags/ in google chrome GOOGLE FOR SMART CARD and search webRTC. Find the Anonymize local IPs exposed by WebRTC and change the value to Disabled and relaunch the browser.
+
+6. Use this link for smart card reader with ecare -> http://qa-testing-env.eurekare.net/#/
+
+TESTQA (v4.16.21) - eCare - UPDATED 05-22-2026

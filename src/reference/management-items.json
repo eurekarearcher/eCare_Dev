@@ -1,0 +1,10 @@
+{
+    "management_items":[
+        { "lib_id": "1", "management_description": "BREAST FEEDING PROGRAM EDUCATION" },
+        { "lib_id": "2", "management_description": "COUNSELING FOR SMOKING CESSATION" },
+        { "lib_id": "3", "management_description": "COUNSELING FOR LIFESTYLE MODIFICATION" },
+        { "lib_id": "4", "management_description": "ORAL CHECK-UP AND PROPHYLAXIS" },
+        { "lib_id": "0", "management_description": "NOT APPLICABLE" },
+        { "lib_id": "X", "management_description": "OTHERS" }
+    ]
+}

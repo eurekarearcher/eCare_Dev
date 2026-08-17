@@ -1,0 +1,33 @@
+{
+    "mdisease_list": [
+      { "code": "999", "description": "NONE" },
+      { "code": "001", "description": "ALLERGY" },
+      { "code": "002", "description": "ASTHMA" },
+      { "code": "998", "description": "AUTOIMMUNE DISEASE" },
+      { "code": "998", "description": "BRONCHIAL ASTHMA" },
+      { "code": "003", "description": "CANCER" },
+      { "code": "004", "description": "CEREBROVASCULAR DISEASE" },
+      { "code": "005", "description": "CORONARY ARTERY DISEASE" },
+      { "code": "998", "description": "DIABETES" },
+      { "code": "006", "description": "DIABETES MELLITUS" },
+      { "code": "007", "description": "EMPHYSEMA" },
+      { "code": "998", "description": "END STAGE RENAL DISEASE" },
+      { "code": "008", "description": "EPILEPSY/SEIZURE DISORDER" },
+      { "code": "016", "description": "EXTRAPULMONARY TUBERCULOSIS" },
+      { "code": "998", "description": "HEART DISEASE" },
+      { "code": "009", "description": "HEPATITIS" },
+      { "code": "998", "description": "HIV" },
+      { "code": "010", "description": "HYPERLIPIDEMIA" },
+      { "code": "011", "description": "HYPERTENSION" },
+      { "code": "998", "description": "KIDNEY DISEASE" },
+      { "code": "018", "description": "MENTAL ILLNESS" },
+      { "code": "012", "description": "PEPTIC ULCER" },
+      { "code": "013", "description": "PNEUMONIA" },
+      { "code": "015", "description": "PULMONARY TUBERCULOSIS" },
+      { "code": "014", "description": "THYROID DISEASE" },
+      { "code": "998", "description": "TUBERCULOSIS" },
+      { "code": "017", "description": "URINARY TRACT INFECTION" },
+      { "code": "998", "description": "OTHERS" }
+    ]
+  }
+  

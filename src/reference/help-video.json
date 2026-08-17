@@ -1,0 +1,199 @@
+{
+    "user_verification": {
+        "v_id": "1440001",
+        "module": "registration",
+        "route": 1
+    },
+    
+    "patient_information": {
+        "v_id": "1440002",
+        "module": "registration",
+        "route": 2 
+    },
+
+    "questionnaire": {
+        "v_id": "1440003",
+        "module": "registration",
+        "route": 3
+    },
+
+    "issuance_of_card": {
+        "v_id": "1440004",
+        "module": "registration",
+        "route": 5 
+    },
+
+    "code_scanning": {
+        "v_id": "1440005",
+        "module": "patient_encounter",
+        "route": "/code-scanning" 
+    },
+    
+    "eligibility": {
+        "v_id": "1440006",
+        "module": "patient_encounter",
+        "route": "/eligibility" 
+    },
+    
+    "complaints_symptoms_history": {
+        "v_id": "1440007",
+        "module": "pre_cons",
+        "route": "/admission/consultation" 
+    },
+    
+    "medical_history": {
+        "v_id": "1440008",
+        "module": "pre_cons",
+        "route": "/admission/medical-history" 
+    },
+    
+    "physical_examination": {
+        "v_id": "1440009",
+        "module": "pre_cons",
+        "route": "/admission/physical-examination" 
+    },
+    
+    "immunization_record": {
+        "v_id": "14400010",
+        "module": "pre_cons",
+        "route": "/admission/immunization-record" 
+    },
+    
+    "obgyne_history": {
+        "v_id": "14400011",
+        "module": "pre_cons",
+        "route": "/admission/obgyne-history" 
+    },
+    
+    "ncd": {
+        "v_id": "14400012",
+        "module": "pre_cons",
+        "route": "/admission/ncdqans" 
+    },
+    
+    "patient_queue_list": {
+        "v_id": "14400013",
+        "module": "doc_datp",
+        "route": "/patient-queue-list" 
+    },
+    
+    "emr_patient_information": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/patient-information" 
+    },
+
+    "emr_medical_history": {
+        "v_id": "14400016",
+        "module": "doc_datp",
+        "route": "/emr-consultation/medical-history" 
+    },
+
+    "emr_physical_examination": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/physical-examination" 
+    },
+
+    "emr_immunization_records": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/immunization-records" 
+    },
+
+    "emr_obgyne_history": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/obgyne-history" 
+    },
+
+    "emr_medical_records": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/medical-records" 
+    },
+
+    "emr_diagnostic_exam_result": {
+        "v_id": "14400014",
+        "module": "doc_datp",
+        "route": "/emr-consultation/diagnostic-exam-result" 
+    },
+
+    "emr_physician_diagnosis_and_treatment_plan": {
+        "v_id": "14400015",
+        "module": "doc_datp",
+        "route": "/emr-consultation/physician-diagnosis-and-treatment-plan"
+    },
+
+    "medicine_inventory": {
+        "v_id": "14400017",
+        "module": "pharmacy",
+        "route": "/pharmacist/inventory" 
+    },
+ 
+    "dispending_of_medicine": {
+        "v_id": "14400018",
+        "module": "pharmacy",
+        "route": "/pharmacist/dispensing" 
+    },
+
+    "transfer_medicine": {
+        "v_id": "14400019",
+        "module": "pharmacy",
+        "route": "/pharmacist/transfer" 
+    },
+
+    "receive_medicine": {
+        "v_id": "14400020",
+        "module": "pharmacy",
+        "route": "/pharmacist/received" 
+    },
+
+    "telemedicine": {
+        "v_id": "14400021",
+        "module": "doc_tele",
+        "route": "/teleconsult-clinic-hours" 
+    },
+
+    "user_configuration": {
+        "v_id": "1440022",
+        "module": "admin_module",
+        "route": "/admin/user-registration" 
+    },
+
+    "top_cases": {
+        "v_id": "1440023",
+        "module": "admin_module",
+        "route": "/admin/top-cases" 
+    },
+
+    "cost_of_procedure": {
+        "v_id": "1440024",
+        "module": "admin_module",
+        "route": "/admin/cost-of-procedure" 
+    },
+
+    "medical_transaction_report": {
+        "v_id": "1440025",
+        "module": "admin_module",
+        "route": "/admin/medical-transaction-report" 
+    },
+
+    "m1_report": {
+        "v_id": "1440026",
+        "module": "admin_module",
+        "route": "/admin/m1-report" 
+    },
+
+    "m2_report": {
+        "v_id": "1440027",
+        "module": "admin_module",
+        "route": "/admin/m2-report" 
+    },
+
+    "medicine_consumption_report": {
+        "v_id": "1440028",
+        "module": "admin_module",
+        "route": "/admin/medicine-consumption-report" 
+    } 
+}
