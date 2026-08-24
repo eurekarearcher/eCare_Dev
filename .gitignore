@@ -1,10 +1,14 @@
-# 1. I-ignore ang lahat ng nasa root (mga files lang, hindi kasama ang subdirectories)
+# 1. I-ignore ang lahat ng files sa root
 /*.*
 
 # 2. I-ignore ang lahat ng folders sa root
 /*/
 
-# 3. I-unignore ang dist folder at ang .gitignore mismo
+# 3. I-unignore ang dist folder at .gitignore
 !/dist/
 !.gitignore
+
+# 4. I-unignore ang .github folder at ang workflows/deploy.yml
+!/.github/
+!/.github/workflows/
 !/.github/workflows/deploy.yml
