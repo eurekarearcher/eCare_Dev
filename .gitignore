@@ -7,3 +7,4 @@
 # 3. I-unignore ang dist folder at ang .gitignore mismo
 !/dist/
 !.gitignore
+!.github/workflows/deploy.yml
