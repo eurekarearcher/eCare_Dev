@@ -1,5 +1,9 @@
-# ignore all root folder
-/*
+# 1. I-ignore ang lahat ng nasa root (mga files lang, hindi kasama ang subdirectories)
+/*.*
 
-# unignore dist folder
+# 2. I-ignore ang lahat ng folders sa root
+/*/
+
+# 3. I-unignore ang dist folder at ang .gitignore mismo
 !/dist/
+!.gitignore
