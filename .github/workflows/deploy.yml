@@ -19,11 +19,13 @@ jobs:
 
       - name: Deploy Files and Clean Removed Files
         shell: bash
-        run: |
+        env:
           SSH_HOST: ${{ secrets.DEV_HOST_KEY }}
           SSH_USER: ${{ secrets.DEV_USER_KEY }}
+        run: |
           TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
+          DEST="$SSH_USER@$SSH_HOST"
 
-          ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+          ssh -o StrictHostKeyChecking=no "$DEST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
 
-          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
+          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no "$DEST" "tar -xzf - -C \"$TARGET_DIR\""
