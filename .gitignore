@@ -1,1 +1,5 @@
-node_modules/
+# ignore all root folder
+/*
+
+# unignore dist folder
+!/dist/
