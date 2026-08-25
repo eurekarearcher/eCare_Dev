@@ -9,6 +9,6 @@
 !.gitignore
 
 # 4. I-unignore ang .github folder at ang workflows/deploy.yml
-!/.github/
-!/.github/workflows/
-!/.github/workflows/deploy.yml
+# !/.github/
+# !/.github/workflows/
+# !/.github/workflows/deploy.yml
