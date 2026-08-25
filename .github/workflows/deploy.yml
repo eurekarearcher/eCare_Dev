@@ -1,12 +1,14 @@
-name: Deploy via SSH (Key Authentication)
+name: Build and Deploy via SSH
 
 on:
   push:
     branches:
       - main
+      - qa
+      - demo
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: self-hosted
 
     env:
@@ -17,15 +19,43 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy Files and Clean Removed Files
+      # 1. Install Node.js dependencies
+      - name: Install Dependencies
+        run: npm ci
+
+      # 2. Automatically build the project (gumagawa ng dist folder)
+      - name: Build Project
+        run: npm run build
+
+      # 3. Deploy generated dist files via SSH
+      - name: Deploy Dist Files to Server
         shell: bash
-        env:
-          SSH_HOST: ${{ secrets.DEV_HOST_KEY }}
-          SSH_USER: ${{ secrets.DEV_USER_KEY }}
         run: |
-          TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
-          DEST="$SSH_USER@$SSH_HOST"
+          SSH_HOST=$(echo "${{ secrets.DEV_HOST_KEY }}" | tr -d '\r\n ')
+          SSH_USER=$(echo "${{ secrets.DEV_USER_KEY }}" | tr -d '\r\n ')
+          BRANCH_NAME="${{ github.ref_name }}"
 
-          ssh -o StrictHostKeyChecking=no "$DEST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+          case "$BRANCH_NAME" in
+            "demo")
+              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH/demo"
+              ;;
+            "qa")
+              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH/qa"
+              ;;
+            "main")
+              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
+              ;;
+            *)
+              echo "Unknown branch: $BRANCH_NAME"
+              exit 1
+              ;;
+          esac
 
-          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no "$DEST" "tar -xzf - -C \"$TARGET_DIR\""
+          echo "Deploying dist contents of [$BRANCH_NAME] to $TARGET_DIR..."
+
+          # Linisin ang target directory sa server
+          ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+
+          # Pumasok sa na-build na dist folder at i-compress/i-transfer ang laman nito
+          cd dist
+          tar -czf - . | ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
