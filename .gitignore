@@ -5,7 +5,7 @@
 /*/
 
 # 3. I-unignore ang dist folder at .gitignore
-!/dist/
+# !/dist/
 !.gitignore
 
 # 4. I-unignore ang .github folder at ang workflows/deploy.yml
