@@ -1,4 +1,4 @@
-name: Build and Deploy via SSH
+name: Deploy Pre-Built Dist via SSH
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - demo
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: self-hosted
 
     env:
@@ -19,15 +19,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 1. Install Node.js dependencies
-      - name: Install Dependencies
-        run: npm ci
-
-      # 2. Automatically build the project (gumagawa ng dist folder)
-      - name: Build Project
-        run: npm run build
-
-      # 3. Deploy generated dist files via SSH
       - name: Deploy Dist Files to Server
         shell: bash
         run: |
@@ -51,11 +42,10 @@ jobs:
               ;;
           esac
 
-          echo "Deploying dist contents of [$BRANCH_NAME] to $TARGET_DIR..."
+          echo "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Linisin ang target directory sa server
+          # 1. Linisin ang target directory sa server
           ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
 
-          # Pumasok sa na-build na dist folder at i-compress/i-transfer ang laman nito
-          cd dist
-          tar -czf - . | ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
+          # 2. I-compress at i-transfer ang buong laman ng repo diretso sa server
+          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
