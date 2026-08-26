@@ -36,14 +36,25 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Siguraduhing may sshpass.exe sa Git bin folder
+          # 1. Siguraduhing may valid na sshpass.exe sa Git bin folder
           $gitBin = "C:\Program Files\Git\usr\bin"
           $sshpassPath = "$gitBin\sshpass.exe"
           
+          # I-delete muna kung mali/corrupted ang dating na-download na file
+          if (Test-Path $sshpassPath) {
+              $firstLine = Get-Content $sshpassPath -Head 1 -ErrorAction SilentlyContinue
+              if ($firstLine -like "*Not Found*" -or $firstLine -like "*<html*") {
+                  Remove-Item -Path $sshpassPath -Force
+              }
+          }
+
           if (-not (Test-Path $sshpassPath)) {
-              Write-Host "Downloading sshpass.exe..."
+              Write-Host "Downloading working sshpass.exe binary..."
               [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              Invoke-WebRequest -Uri "https://raw.githubusercontent.com/marlon-m/sshpass-win/master/sshpass.exe" -OutFile $sshpassPath
+              
+              # Direct Working Download URL
+              $url = "https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe"
+              Invoke-WebRequest -Uri $url -OutFile $sshpassPath -UserAgent "Mozilla/5.0"
           }
 
           # 2. Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
