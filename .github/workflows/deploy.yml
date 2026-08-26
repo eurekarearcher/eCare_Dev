@@ -45,7 +45,7 @@ jobs:
               Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile $plinkPath
           }
 
-          # 2. Isulat sa temporary bash script para maiwasan ang PowerShell parsing errors
+          # 2. Isulat sa temporary bash script gamit ang tamang Plink execution path
           $bashScriptContent = @"
           set -e
 
@@ -57,6 +57,9 @@ jobs:
           echo "Uploading and extracting files..."
           tar --exclude='.git' --exclude='.github' -czf - . | "\$PLINK" -ssh -batch -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
           "@
+
+          # Ayusin ang string substitution bago isulat ang script
+          $bashScriptContent = $bashScriptContent.Replace('"\$PLINK"', '"/c/Program Files/Git/usr/bin/plink.exe"')
 
           Set-Content -Path "run_deploy.sh" -Value $bashScriptContent -Encoding ASCII
 
