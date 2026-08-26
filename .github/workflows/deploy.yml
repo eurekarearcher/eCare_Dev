@@ -11,46 +11,27 @@ jobs:
   deploy:
     runs-on: self-hosted
 
-    env:
-      NODE_SKIP_PLATFORM_CHECK: '1'
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Deploy Dist Files to Server
-        shell: powershell
+      - name: Set Target Directory
+        id: set-dir
+        shell: bash
         run: |
-          $SSH_HOST = "${{ secrets.DEV_HOST_KEY }}".Trim()
-          $SSH_USER = "${{ secrets.DEV_USER_KEY }}".Trim()
-          $SSH_PASS = "${{ secrets.DEV_PASSWORD_KEY }}".Trim()
-          $BRANCH_NAME = "${{ github.ref_name }}"
+          case "${{ github.ref_name }}" in
+            "demo") echo "target=/volume1/EKSYSTEM/EKSystem Version 3.5/GH/demo" >> $GITHUB_OUTPUT ;;
+            "qa") echo "target=/volume1/EKSYSTEM/EKSystem Version 3.5/GH/qa" >> $GITHUB_OUTPUT ;;
+            "main") echo "target=/volume1/EKSYSTEM/EKSystem Version 3.5/GH" >> $GITHUB_OUTPUT ;;
+          esac
 
-          switch ($BRANCH_NAME) {
-            "demo" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH/demo" }
-            "qa"   { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH/qa" }
-            "main" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH" }
-            default { Write-Error "Unknown branch: $BRANCH_NAME"; exit 1 }
-          }
-
-          Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
-
-          # Mag-install ng POSH-SSH o gagamit ng PowerShell SSH
-          # Lilinisin muna ang folder sa Synology server
-          $sshCommand = "mkdir -p `"$TARGET_DIR`" && rm -rf `"$TARGET_DIR`"/* `"$TARGET_DIR`"/.[!.]*"
-          
-          # Gamit ang sshpass sa Git Bash environment kung nandoon ang Git
-          $env:SSHPASS = $SSH_PASS
-          
-          # Gamitin ang Git Bash na kasama ng Windows para sa SSH transfer
-          & "C:\Program Files\Git\bin\bash.exe" -c "
-            SSH_HOST='$SSH_HOST'
-            SSH_USER='$SSH_USER'
-            TARGET_DIR='$TARGET_DIR'
-            
-            # Transfer gamit ang ssh password stream
-            echo '$SSH_PASS' | ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no ${SSH_USER}@${SSH_HOST} 'mkdir -p `"$TARGET_DIR`" && rm -rf `"$TARGET_DIR`"/* `"$TARGET_DIR`"/.[!.]*'
-            
-            tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no ${SSH_USER}@${SSH_HOST} 'tar -xzf - -C `"$TARGET_DIR`"'
-          "
+      - name: Copy Files via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEV_HOST_KEY }}
+          username: ${{ secrets.DEV_USER_KEY }}
+          password: ${{ secrets.DEV_PASSWORD_KEY }}
+          source: "./*"
+          target: ${{ steps.set-dir.outputs.target }}
+          rm: true
+          strip_components: 0
