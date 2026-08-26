@@ -22,9 +22,9 @@ jobs:
       - name: Deploy Dist Files to Server
         shell: powershell
         run: |
-          $SSH_HOST = "${{ secrets.DEV_HOST_KEY }}".Trim()
-          $SSH_USER = "${{ secrets.DEV_USER_KEY }}".Trim()
-          $SSH_PASS = "${{ secrets.DEV_PASSWORD_KEY }}".Trim()
+          $SSH_HOST = "${{ secrets.NTEG_HOST_KEY }}".Trim()
+          $SSH_USER = "${{ secrets.NTEG_USER_KEY }}".Trim()
+          $SSH_PASS = "${{ secrets.NTEG_PASSWORD_KEY }}".Trim()
           $BRANCH_NAME = "${{ github.ref_name }}"
 
           switch ($BRANCH_NAME) {
