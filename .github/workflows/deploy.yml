@@ -36,29 +36,20 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Isusulat ang SSH password session sa panandaliang Bash script gamit ang simple SSH stream
+          # 1. Download plink.exe kung wala pa sa Git bin folder
+          $plinkPath = "C:\Program Files\Git\usr\bin\plink.exe"
+
+          if (-not (Test-Path $plinkPath)) {
+              Write-Host "Downloading plink.exe..."
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+              Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile $plinkPath
+          }
+
+          # 2. Isulat ang deployment commands sa Git Bash
           $bashPath = "C:\Program Files\Git\bin\bash.exe"
-          
-          $scriptContent = @"
-          set -e
 
-          # Pagkopya gamit ang pure tar/ssh at password stream sa Git Bash
-          export SSHPASS="$SSH_PASS"
+          Write-Host "Cleaning target directory..."
+          & $bashPath -c "'/c/Program Files/Git/usr/bin/plink.exe' -ssh -batch -pw '$SSH_PASS' ${SSH_USER}@${SSH_HOST} \"mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*\""
 
-          # Gumawa ng SSH connection command para sa directory cleanup at extraction
-          echo "Cleaning target directory..."
-          "C:\Program Files\Git\usr\bin\ssh.exe" -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*" <<EOF
-          $SSH_PASS
-          EOF
-
-          echo "Uploading and extracting files...."
-          tar --exclude='.git' --exclude='.github' -czf - . | "C:\Program Files\Git\usr\bin\ssh.exe" -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'" <<EOF
-          $SSH_PASS
-          EOF
-          "@
-
-          Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
-
-          & $bashPath "deploy.sh"
-
-          Remove-Item -Path "deploy.sh" -Force -ErrorAction SilentlyContinue
+          Write-Host "Uploading and extracting files..."
+          & $bashPath -c "tar --exclude='.git' --exclude='.github' -czf - . | '/c/Program Files/Git/usr/bin/plink.exe' -ssh -batch -pw '$SSH_PASS' ${SSH_USER}@${SSH_HOST} \"tar -xzf - -C '$TARGET_DIR'\""
