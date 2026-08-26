@@ -36,24 +36,16 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Force TLS 1.2 at gumamit ng System.Net.WebClient bilang fallback kung wala pa ang sshpass.exe
-          $sshpassPath = "C:\Program Files\Git\usr\bin\sshpass.exe"
-
-          if (-not (Test-Path $sshpassPath)) {
-              Write-Host "Setting up TLS 1.2 and downloading sshpass.exe..."
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          # 1. Siguraduhing naka-install ang sshpass sa pamamagitan ng winget
+          if (-not (Get-Command sshpass -ErrorAction SilentlyContinue)) {
+              Write-Host "Installing sshpass-win32 via winget..."
+              winget install -e --id xhcoding.sshpass-win32 --accept-source-agreements --accept-package-agreements
               
-              try {
-                  $wc = New-Object System.Net.WebClient
-                  $wc.Headers.Add("User-Agent", "Mozilla/5.0")
-                  $wc.DownloadFile("https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe", $sshpassPath)
-              } catch {
-                  Write-Host "Web download failed. Please manually place sshpass.exe in $sshpassPath"
-                  throw $_
-              }
+              # Refresh Environment Variables para ma-detect agad ng PowerShell/Git Bash ang bagong PATH
+              $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           }
 
-          # Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
+          # 2. Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
           $scriptContent = @"
           set -e
 
@@ -66,8 +58,8 @@ jobs:
 
           Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
 
-          # I-execute sa Git Bash
+          # 3. I-execute sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
-          # Cleanup
+          # 4. Cleanup
           Remove-Item -Path "deploy.sh" -Force
