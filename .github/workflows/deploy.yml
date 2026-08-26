@@ -36,29 +36,33 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Download sshpass for Windows inside Git Bash if not present
-          $bashPath = "C:\Program Files\Git\bin\bash.exe"
+          # 1. Siguraduhing may sshpass.exe sa Git bin folder
+          $gitBin = "C:\Program Files\Git\usr\bin"
+          $sshpassPath = "$gitBin\sshpass.exe"
+          
+          if (-not (Test-Path $sshpassPath)) {
+              Write-Host "Downloading sshpass.exe..."
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+              Invoke-WebRequest -Uri "https://raw.githubusercontent.com/marlon-m/sshpass-win/master/sshpass.exe" -OutFile $sshpassPath
+          }
 
+          # 2. Isulat ang malinis na deploy.sh file
           $scriptContent = @"
           set -e
-
-          # Install sshpass binary inside runner environment if needed
-          if ! command -v sshpass &> /dev/null; then
-              echo "Downloading sshpass for Windows..."
-              curl -sSL https://github.com/cmcqueen/sshpass-for-windows/releases/download/v1.06/sshpass.exe -o /usr/bin/sshpass.exe || true
-          fi
 
           SSH_CMD="sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST}"
 
           echo "Cleaning target directory..."
-          \$SSH_CMD "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+          eval \$SSH_CMD '"mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"'
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' -czf - . | \$SSH_CMD "tar -xzf - -C \"$TARGET_DIR\""
+          tar --exclude='.git' --exclude='.github' -czf - . | eval \$SSH_CMD '"tar -xzf - -C \"$TARGET_DIR\""'
           "@
 
-          Set-Content -Path "deploy.sh" -Value $scriptContent
+          Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding UTF8
 
-          & $bashPath "deploy.sh"
+          # 3. I-execute sa Git Bash
+          & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
+          # 4. Cleanup
           Remove-Item -Path "deploy.sh" -Force
