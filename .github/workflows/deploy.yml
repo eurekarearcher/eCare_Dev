@@ -46,23 +46,21 @@ jobs:
               Invoke-WebRequest -Uri "https://raw.githubusercontent.com/marlon-m/sshpass-win/master/sshpass.exe" -OutFile $sshpassPath
           }
 
-          # 2. Isulat ang malinis na deploy.sh file
+          # 2. Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
           $scriptContent = @"
           set -e
 
-          SSH_CMD="sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST}"
-
           echo "Cleaning target directory..."
-          eval \$SSH_CMD '"mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"'
+          sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST} "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' -czf - . | eval \$SSH_CMD '"tar -xzf - -C \"$TARGET_DIR\""'
+          tar --exclude='.git' --exclude='.github' -czf - . | sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST} "tar -xzf - -C \"$TARGET_DIR\""
           "@
 
-          Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding UTF8
+          Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
 
           # 3. I-execute sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
-          # 4. Cleanups
+          # 4. Cleanup
           Remove-Item -Path "deploy.sh" -Force
