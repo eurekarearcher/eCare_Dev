@@ -43,7 +43,7 @@ jobs:
           PLINK="/c/Program Files/Git/usr/bin/plink.exe"
           HOSTKEY="ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU"
 
-          echo "Cleaning target directory..."
+          echo "Cleaning target directory....."
           "\$PLINK" -ssh -batch -hostkey "\$HOSTKEY" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
 
           echo "Uploading and extracting files..."
