@@ -51,7 +51,7 @@ jobs:
           $SSH_PASS
           EOF
 
-          echo "Uploading and extracting files..."
+          echo "Uploading and extracting files...."
           tar --exclude='.git' --exclude='.github' -czf - . | "C:\Program Files\Git\usr\bin\ssh.exe" -o StrictHostKeyChecking=no -o PreferredAuthentications=password ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'" <<EOF
           $SSH_PASS
           EOF
