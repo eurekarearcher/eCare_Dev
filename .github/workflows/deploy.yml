@@ -36,24 +36,25 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Siguraduhing naka-install ang sshpass sa pamamagitan ng winget
-          if (-not (Get-Command sshpass -ErrorAction SilentlyContinue)) {
-              Write-Host "Installing sshpass-win32 via winget..."
-              winget install -e --id xhcoding.sshpass-win32 --accept-source-agreements --accept-package-agreements
-              
-              # Refresh Environment Variables para ma-detect agad ng PowerShell/Git Bash ang bagong PATH
-              $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
-          }
+          # 1. Gumawa ng temporary askpass helper para sa password prompt ng native SSH
+          $askpassScript = @"
+          #!/bin/sh
+          echo "$SSH_PASS"
+          "@
+          Set-Content -Path "askpass.sh" -Value $askpassScript -Encoding ASCII
 
           # 2. Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
           $scriptContent = @"
           set -e
 
+          export DISPLAY=:0
+          export SSH_ASKPASS="./askpass.sh"
+
           echo "Cleaning target directory..."
-          sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST} "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+          setsid ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*" < /dev/null
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' -czf - . | sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST} "tar -xzf - -C \"$TARGET_DIR\""
+          tar --exclude='.git' --exclude='.github' -czf - . | setsid ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tar -xzf - -C \"$TARGET_DIR\"" < /dev/null
           "@
 
           Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
@@ -62,4 +63,5 @@ jobs:
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
           # 4. Cleanup
-          Remove-Item -Path "deploy.sh" -Force
+          Remove-Item -Path "deploy.sh" -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path "askpass.sh" -Force -ErrorAction SilentlyContinue
