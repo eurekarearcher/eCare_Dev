@@ -36,18 +36,15 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Isulat ang deployment commands gamit ang permanent na plink.exe sa system
+          # Isulat ang deployment commands gamit ang explicit path sa /c/Windows/plink.exe
           $bashScriptContent = @"
           set -e
 
-          PLINK="/c/windows/plink.exe"
-          HOSTKEY="ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU"
-
-          echo "Cleaning target directory....."
-          "\$PLINK" -ssh -batch -hostkey "\$HOSTKEY" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
+          echo "Cleaning target directory..."
+          /c/Windows/plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' -czf - . | "\$PLINK" -ssh -batch -hostkey "\$HOSTKEY" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
+          tar --exclude='.git' --exclude='.github' -czf - . | /c/Windows/plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
           "@
 
           Set-Content -Path "run_deploy.sh" -Value $bashScriptContent -Encoding ASCII
@@ -55,5 +52,5 @@ jobs:
           # I-run ang script sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "run_deploy.sh"
 
-          # Temporary script cleanup lang
+          # Cleanup
           Remove-Item -Path "run_deploy.sh" -Force -ErrorAction SilentlyContinue
