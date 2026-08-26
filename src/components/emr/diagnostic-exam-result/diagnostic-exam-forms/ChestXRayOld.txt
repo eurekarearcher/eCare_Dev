@@ -1,0 +1,94 @@
+<template>
+    <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+            <v-row>
+                <v-col sm="3" md="3" lg="3">
+                    <div class="body-2"> <span class="text-body-2 font-weight-medium"> CPT CODE </span> <br/><span class="text-body-2"> {{ diagnostic_exam.cpt_code }} </span></div>
+                </v-col>
+                <v-col sm="7" md="7" lg="7">
+                    <div class="body-2"> <span class="text-body-2 font-weight-medium"> DESCRIPTION </span> <br/><span class="text-body-2"> {{ diagnostic_exam.cpt_desc }}</span></div>
+                </v-col>
+                <v-col sm="2" md="2" lg="2">
+                    <div class="body-2"> <span class="text-body-2 font-weight-medium"> STATUS </span> <br/><span class="text-body-2"> {{ diagnostic_exam.pStatus.toUpperCase() }}</span></div>
+                </v-col>
+            </v-row>
+        </v-card-title>
+        <v-divider> </v-divider>
+        <template>
+            <v-row v-if="diagnostic_exam.diagnostic.file_path" class="pt-4 px-4"> 
+                <v-col cols="12" sm="12" md="12" lg="12" class="d-flex justify-end"> 
+                    <v-btn @click="viewPdfFile(diagnostic_exam.diagnostic.file_path)" color="primary" small> <v-icon> mdi-file-pdf-box </v-icon> View PDF File </v-btn>
+                </v-col>
+            </v-row>
+            <v-row class="pb-4 px-4">
+                <v-col sm="12" md="12" lg="12">
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Lab/Radio Facility </p>
+                        <v-text-field v-model="diagnostic_exam.diagnostic.pReferralFacility" dense :readonly="emr_page"> </v-text-field>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Lab Date </p>
+                        <v-menu :close-on-content-click="false" transition="scale-transition" min-width="auto" offset-y top>
+                            <template v-slot:activator="{ on }">
+                                <v-text-field v-on="on" v-model="diagnostic_exam.diagnostic.pLabDate" placeholder="MM-DD-YYYY" dense :readonly="emr_page"></v-text-field>
+                            </template>
+                            <v-date-picker v-model="diagnostic_exam.diagnostic.pLabDate" no-title :readonly="emr_page"></v-date-picker>
+                        </v-menu>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Findings </p>
+                        <template v-if="emr_page"> 
+                            <v-combobox v-model="diagnostic_exam.diagnostic.pFindings" :items="findings_list_items[0]" item-text="LibDesc" item-value="LibID" :readonly="emr_page" dense return-object>
+                            </v-combobox>
+                        </template>
+                        <template v-else> 
+                            <v-combobox v-model="diagnostic_exam.diagnostic.pFinds" :items="findings_list_items[0]" item-text="LibDesc" item-value="LibID" :readonly="emr_page" dense return-object>
+                            </v-combobox>
+                        </template>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Remarks Findings </p>
+                        <v-text-field v-model="diagnostic_exam.diagnostic.pRemarksFindings" dense :readonly="emr_page"> </v-text-field>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Observation</p>
+                        <template v-if="emr_page"> 
+                            <v-combobox v-model="diagnostic_exam.diagnostic.pObservation" :items="observation_list_items[0]" item-text="LibDesc" item-value="LibID" :readonly="emr_page" dense return-object>
+                            </v-combobox>
+                        </template>
+                        <template v-else> 
+                            <v-combobox v-model="diagnostic_exam.diagnostic.pObs" :items="observation_list_items[0]" item-text="LibDesc" item-value="LibID" :readonly="emr_page" dense return-object>
+                            </v-combobox>
+                        </template>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Remarks Observation </p>
+                        <v-text-field v-model="diagnostic_exam.diagnostic.pRemarksObservation" dense :readonly="emr_page"> </v-text-field>
+                    </div>
+                    <div class="d-flex justify-end align-baseline">
+                        <p class="pr-2 body-2 font-weight-medium label-width"> Diagnostic Lab Fee </p>
+                        <v-text-field v-model="diagnostic_exam.diagnostic.pDiagnosticLabFee" v-on:keypress="$emit('numberOnly', $event)" dense :readonly="emr_page"> </v-text-field>
+                    </div>       
+                </v-col>
+            </v-row>
+        </template>
+    </v-card>
+</template>
+
+<script>
+export default {
+    props: ['diagnostic_exam', 'findings_list_items', 'observation_list_items', 'emr_page'],
+
+    methods: {
+        viewPdfFile(value) {
+            window.open(value, '_blank')
+        }
+    }
+}
+</script>
+
+<style scoped>
+.label-width{
+    width: 180px;
+}
+</style>>
