@@ -28,37 +28,32 @@ jobs:
           $BRANCH_NAME = "${{ github.ref_name }}"
 
           switch ($BRANCH_NAME) {
-            "demo" { $TARGET_DIR = "/volume1/EKSYSTEM/EK System Version 3.5/GH/demo" }
-            "qa"   { $TARGET_DIR = "/volume1/EKSYSTEM/EK System Version 3.5/GH/qa" }
-            "main" { $TARGET_DIR = "/volume1/EKSYSTEM/EK System Version 3.5/GH" }
+            "demo" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH/demo" }
+            "qa"   { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH/qa" }
+            "main" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH" }
             default { Write-Error "Unknown branch: $BRANCH_NAME"; exit 1 }
           }
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Download plink.exe sa local workspace directory
-          if (-not (Test-Path ".\plink.exe")) {
-              Write-Host "Downloading plink.exe..."
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile ".\plink.exe"
-          }
-
-          # 2. Isulat ang deployment commands na nakadikit na agad ang host key
+          # Isulat ang deployment commands gamit ang permanent na plink.exe sa system
           $bashScriptContent = @"
           set -e
 
+          PLINK="/c/Program Files/Git/usr/bin/plink.exe"
+          HOSTKEY="ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU"
+
           echo "Cleaning target directory..."
-          ./plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
+          "\$PLINK" -ssh -batch -hostkey "\$HOSTKEY" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' --exclude='plink.exe' -czf - . | ./plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
+          tar --exclude='.git' --exclude='.github' -czf - . | "\$PLINK" -ssh -batch -hostkey "\$HOSTKEY" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
           "@
 
           Set-Content -Path "run_deploy.sh" -Value $bashScriptContent -Encoding ASCII
 
-          # 3. I-run ang script sa Git Bash
+          # I-run ang script sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "run_deploy.sh"
 
-          # 4. Cleanup
+          # Temporary script cleanup lang
           Remove-Item -Path "run_deploy.sh" -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path ".\plink.exe" -Force -ErrorAction SilentlyContinue
