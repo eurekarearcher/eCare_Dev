@@ -64,5 +64,5 @@ jobs:
           # 3. I-execute sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
-          # 4. Cleanup
+          # 4. Cleanups
           Remove-Item -Path "deploy.sh" -Force
