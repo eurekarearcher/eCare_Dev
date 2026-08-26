@@ -36,18 +36,24 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Force TLS 1.2 at gumamit ng System.Net.WebClient para ma-bypass ang Invoke-WebRequest restriction
+          # Force TLS 1.2 at gumamit ng System.Net.WebClient bilang fallback kung wala pa ang sshpass.exe
           $sshpassPath = "C:\Program Files\Git\usr\bin\sshpass.exe"
-          
+
           if (-not (Test-Path $sshpassPath)) {
-              Write-Host "Downloading sshpass using WebClient fallback..."
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
-              $wc = New-Object System.Net.WebClient
-              $wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
-              $wc.DownloadFile("https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe", $sshpassPath)
+              Write-Host "Setting up TLS 1.2 and downloading sshpass.exe..."
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+              
+              try {
+                  $wc = New-Object System.Net.WebClient
+                  $wc.Headers.Add("User-Agent", "Mozilla/5.0")
+                  $wc.DownloadFile("https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe", $sshpassPath)
+              } catch {
+                  Write-Host "Web download failed. Please manually place sshpass.exe in $sshpassPath"
+                  throw $_
+              }
           }
 
-          # Isulat ang deploy.sh file gamit ang ASCII encoding
+          # Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
           $scriptContent = @"
           set -e
 
@@ -60,7 +66,7 @@ jobs:
 
           Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
 
-          # Execute via Git Bash
+          # I-execute sa Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
           # Cleanup
