@@ -19,22 +19,33 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 1. Install sshpass sa runner (kung wala pa)
+      - name: Install sshpass
+        shell: bash
+        run: |
+          if ! command -v sshpass &> /dev/null; then
+            echo "Installing sshpass..."
+            sudo apt-get update && sudo apt-get install -y sshpass || true
+          fi
+
+      # 2. Deploy gamit ang Password
       - name: Deploy Dist Files to Server
         shell: bash
         run: |
           SSH_HOST=$(echo "${{ secrets.DEV_HOST_KEY }}" | tr -d '\r\n ')
           SSH_USER=$(echo "${{ secrets.DEV_USER_KEY }}" | tr -d '\r\n ')
+          SSH_PASS=$(echo "${{ secrets.DEV_PASSWORD_KEY }}" | tr -d '\r\n ')
           BRANCH_NAME="${{ github.ref_name }}"
 
           case "$BRANCH_NAME" in
             "demo")
-              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH/demo"
+              TARGET_DIR="/volume1/EKSYSTEM/EKSystem Version 3.5/GH/demo"
               ;;
             "qa")
-              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH/qa"
+              TARGET_DIR="/volume1/EKSYSTEM/EKSystem Version 3.5/GH/qa"
               ;;
             "main")
-              TARGET_DIR="/volume1/EKSystem/EKSystem Version 3.5/GH"
+              TARGET_DIR="/volume1/EKSYSTEM/EKSystem Version 3.5/GH"
               ;;
             *)
               echo "Unknown branch: $BRANCH_NAME"
@@ -44,8 +55,8 @@ jobs:
 
           echo "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Linisin ang target directory sa server
-          ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+          # 1. Linisin ang target directory sa server gamit ang sshpass
+          sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
 
-          # 2. I-compress at i-transfer ang buong laman ng repo diretso sa server
-          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
+          # 2. I-compress at i-transfer ang buong laman ng repo gamit ang sshpass
+          tar --exclude='.git' --exclude='.github' -czf - . | sshpass -p "$SSH_PASS" ssh -o StrictHostKeyChecking=no -l "$SSH_USER" "$SSH_HOST" "tar -xzf - -C \"$TARGET_DIR\""
