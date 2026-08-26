@@ -36,28 +36,18 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Siguraduhing may valid na sshpass.exe sa Git bin folder
-          $gitBin = "C:\Program Files\Git\usr\bin"
-          $sshpassPath = "$gitBin\sshpass.exe"
+          # Force TLS 1.2 at gumamit ng System.Net.WebClient para ma-bypass ang Invoke-WebRequest restriction
+          $sshpassPath = "C:\Program Files\Git\usr\bin\sshpass.exe"
           
-          # I-delete muna kung mali/corrupted ang dating na-download na file
-          if (Test-Path $sshpassPath) {
-              $firstLine = Get-Content $sshpassPath -Head 1 -ErrorAction SilentlyContinue
-              if ($firstLine -like "*Not Found*" -or $firstLine -like "*<html*") {
-                  Remove-Item -Path $sshpassPath -Force
-              }
-          }
-
           if (-not (Test-Path $sshpassPath)) {
-              Write-Host "Downloading working sshpass.exe binary..."
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              
-              # Direct Working Download URL
-              $url = "https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe"
-              Invoke-WebRequest -Uri $url -OutFile $sshpassPath -UserAgent "Mozilla/5.0"
+              Write-Host "Downloading sshpass using WebClient fallback..."
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls
+              $wc = New-Object System.Net.WebClient
+              $wc.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+              $wc.DownloadFile("https://github.com/marlon-m/sshpass-win/raw/master/sshpass.exe", $sshpassPath)
           }
 
-          # 2. Isulat ang deploy.sh file gamit ang ASCII encoding (No BOM)
+          # Isulat ang deploy.sh file gamit ang ASCII encoding
           $scriptContent = @"
           set -e
 
@@ -70,8 +60,8 @@ jobs:
 
           Set-Content -Path "deploy.sh" -Value $scriptContent -Encoding ASCII
 
-          # 3. I-execute sa Git Bash
+          # Execute via Git Bash
           & "C:\Program Files\Git\bin\bash.exe" "deploy.sh"
 
-          # 4. Cleanup
+          # Cleanup
           Remove-Item -Path "deploy.sh" -Force
