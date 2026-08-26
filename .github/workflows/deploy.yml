@@ -33,26 +33,32 @@ jobs:
             "main" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH" }
             default { Write-Error "Unknown branch: $BRANCH_NAME"; exit 1 }
           }
-          
-          # Updated file command
+
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # Gagamitin ang plink/ssh o curl para sa transfer sa Windows
+          # Download sshpass for Windows inside Git Bash if not present
           $bashPath = "C:\Program Files\Git\bin\bash.exe"
-          
-          # Isusulat ang script sa temporary bash file para makaiwas sa syntax/quote errors
+
           $scriptContent = @"
-          export SSHPASS='$SSH_PASS'
-          
-          # Gamit ang SSH pipe para sa hindi nanghihingi ng password confirmation
-          ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no ${SSH_USER}@${SSH_HOST} "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
-          
-          tar --exclude='.git' --exclude='.github' -czf - . | ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no ${SSH_USER}@${SSH_HOST} "tar -xzf - -C \"$TARGET_DIR\""
+          set -e
+
+          # Install sshpass binary inside runner environment if needed
+          if ! command -v sshpass &> /dev/null; then
+              echo "Downloading sshpass for Windows..."
+              curl -sSL https://github.com/cmcqueen/sshpass-for-windows/releases/download/v1.06/sshpass.exe -o /usr/bin/sshpass.exe || true
+          fi
+
+          SSH_CMD="sshpass -p '$SSH_PASS' ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password,keyboard-interactive ${SSH_USER}@${SSH_HOST}"
+
+          echo "Cleaning target directory..."
+          \$SSH_CMD "mkdir -p \"$TARGET_DIR\" && rm -rf \"$TARGET_DIR\"/* \"$TARGET_DIR\"/.[!.]*"
+
+          echo "Uploading and extracting files..."
+          tar --exclude='.git' --exclude='.github' -czf - . | \$SSH_CMD "tar -xzf - -C \"$TARGET_DIR\""
           "@
 
           Set-Content -Path "deploy.sh" -Value $scriptContent
 
-          # Patakbuhin gamit ang Git Bash
           & $bashPath "deploy.sh"
-          
+
           Remove-Item -Path "deploy.sh" -Force
