@@ -40,7 +40,7 @@ jobs:
           $bashScriptContent = @"
           set -e
 
-          PLINK="/c/Program Files/Git/usr/bin/plink.exe"
+          PLINK="/c/windows/plink.exe"
           HOSTKEY="ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU"
 
           echo "Cleaning target directory....."
