@@ -33,7 +33,8 @@ jobs:
             "main" { $TARGET_DIR = "/volume1/EKSYSTEM/EKSystem Version 3.5/GH" }
             default { Write-Error "Unknown branch: $BRANCH_NAME"; exit 1 }
           }
-
+          
+          # Updated file command
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
           # Gagamitin ang plink/ssh o curl para sa transfer sa Windows
