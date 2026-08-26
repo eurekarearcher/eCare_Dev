@@ -43,17 +43,15 @@ jobs:
               Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile ".\plink.exe"
           }
 
-          # 2. Isulat ang deployment commands kasama ang server host key fingerprint
+          # 2. Isulat ang deployment commands na nakadikit na agad ang host key
           $bashScriptContent = @"
           set -e
 
-          FINGERPRINT="ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU"
-
           echo "Cleaning target directory..."
-          ./plink.exe -ssh -batch -hostkey "$FINGERPRINT" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
+          ./plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' --exclude='plink.exe' -czf - . | ./plink.exe -ssh -batch -hostkey "$FINGERPRINT" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
+          tar --exclude='.git' --exclude='.github' --exclude='plink.exe' -czf - . | ./plink.exe -ssh -batch -hostkey "ssh-ed25519 255 SHA256:Sl6JLjgNcSYyN+Xq29CfoB5X9rCf0A+Xidq3hJG2IDU" -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
           "@
 
           Set-Content -Path "run_deploy.sh" -Value $bashScriptContent -Encoding ASCII
