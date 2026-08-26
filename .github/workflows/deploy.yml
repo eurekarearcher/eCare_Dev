@@ -36,30 +36,23 @@ jobs:
 
           Write-Host "Deploying contents of [$BRANCH_NAME] to $TARGET_DIR..."
 
-          # 1. Download plink.exe kung wala pa
-          $plinkPath = "C:\Program Files\Git\usr\bin\plink.exe"
-
-          if (-not (Test-Path $plinkPath)) {
+          # 1. Download plink.exe sa local workspace directory para walang space ang path
+          if (-not (Test-Path ".\plink.exe")) {
               Write-Host "Downloading plink.exe..."
               [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile $plinkPath
+              Invoke-WebRequest -Uri "https://the.earth.li/~sgtatham/putty/latest/w64/plink.exe" -OutFile ".\plink.exe"
           }
 
-          # 2. Isulat sa temporary bash script gamit ang tamang Plink execution path
+          # 2. Isulat ang deployment commands sa run_deploy.sh
           $bashScriptContent = @"
           set -e
 
-          PLINK="/c/Program Files/Git/usr/bin/plink.exe"
-
           echo "Cleaning target directory..."
-          "\$PLINK" -ssh -batch -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
+          ./plink.exe -ssh -batch -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "mkdir -p '$TARGET_DIR' && rm -rf '$TARGET_DIR'/* '$TARGET_DIR'/.[!.]*"
 
           echo "Uploading and extracting files..."
-          tar --exclude='.git' --exclude='.github' -czf - . | "\$PLINK" -ssh -batch -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
+          tar --exclude='.git' --exclude='.github' --exclude='plink.exe' -czf - . | ./plink.exe -ssh -batch -pw "$SSH_PASS" ${SSH_USER}@${SSH_HOST} "tar -xzf - -C '$TARGET_DIR'"
           "@
-
-          # Ayusin ang string substitution bago isulat ang script
-          $bashScriptContent = $bashScriptContent.Replace('"\$PLINK"', '"/c/Program Files/Git/usr/bin/plink.exe"')
 
           Set-Content -Path "run_deploy.sh" -Value $bashScriptContent -Encoding ASCII
 
@@ -68,3 +61,4 @@ jobs:
 
           # 4. Cleanup
           Remove-Item -Path "run_deploy.sh" -Force -ErrorAction SilentlyContinue
+          Remove-Item -Path ".\plink.exe" -Force -ErrorAction SilentlyContinue
